@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dialogue Arena — N Waths vs P Waths</title>
+  <title>Waths Arena | Dialogue Evaluation Benchmark</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-container">
     <!-- Slim Top Header with Navigation Tabs -->
     <header class="top-nav compact-nav">
       <div class="nav-left">
-        <span class="logo-badge">WATHS</span>
+        <span class="logo-badge">WATHS <span class="sub-label">EVAL</span></span>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab active">⚔️ Dialogue</a>
-          <a href="/roleplay" class="nav-tab">🎭 Roleplay</a>
+          <a href="/" class="nav-tab active">Dialogue Benchmark</a>
+          <a href="/roleplay" class="nav-tab">Roleplay Benchmark</a>
         </nav>
       </div>
 
@@ -26,9 +26,9 @@
           ⚙️ Settings
         </button>
         <div class="specs-badge compact-specs">
-          <span class="spec-item"><span class="dot lime"></span> Mem: <span id="navMemVal">500c</span></span>
-          <span class="spec-item"><span class="dot sky"></span> Limit: <span id="navLimitVal">≤ 200c</span></span>
-          <span class="spec-item"><span class="dot white"></span> Equal Turns</span>
+          <span class="spec-item"><span class="dot lime"></span> <span class="spec-label">Mem:</span> <span id="navMemVal">500c</span></span>
+          <span class="spec-item"><span class="dot sky"></span> <span class="spec-label">Cap:</span> <span id="navLimitVal">≤ 200c</span></span>
+          <span class="spec-item"><span class="dot white"></span> <span class="spec-label">Mode:</span> Sync</span>
         </div>
       </div>
     </header>
@@ -179,14 +179,34 @@
     <main class="chat-viewport" id="chatViewport">
       <div class="chat-feed" id="chatFeed">
         <div class="welcome-banner compact-welcome">
-          <div class="banner-icon">⚔️</div>
-          <h2>Dialogue Arena</h2>
-          <p>
-            <strong>N Waths</strong> and <strong>P Waths</strong> converse under <strong>≤ 200 characters</strong> with <strong>500 characters of in-session memory</strong>.
-          </p>
-          <p>
-            Score each turn from <strong>1 to 10</strong>. Session memory clears automatically when the arena concludes.
-          </p>
+          <div class="docket-header">
+            <span class="docket-status-tag">EVALUATION DOCKET</span>
+            <span class="docket-id">BENCHMARK-RUN // IDLE</span>
+          </div>
+          <div class="docket-body">
+            <div class="docket-main">
+              <h3>Head-to-Head Dialogue Evaluation</h3>
+              <p>Two distinct LLM architectures run synchronous, turn-based dialogue under strict character and memory constraints. Rate every statement on logic, punchiness, and topic relevance.</p>
+            </div>
+            <div class="docket-specs-grid">
+              <div class="spec-block">
+                <span class="spec-k">N ACTOR</span>
+                <span class="spec-v">NVIDIA NIM (Stepfun)</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">P ACTOR</span>
+                <span class="spec-v">OpenRouter (Llama 3.2)</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">CHAR CAP</span>
+                <span class="spec-v">≤ 200 characters</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">MEMORY</span>
+                <span class="spec-v">500 char rolling session</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -377,7 +397,7 @@
     </div>
   </div>
 
-  <script src="settings.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="settings.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

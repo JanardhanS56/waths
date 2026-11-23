@@ -325,11 +325,11 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   saveWinStat(winningBot);
 
   appendSystemBanner(
-    `🏳️ ${cChar} (${concedingBot}) has conceded! Mathematical victory for ${wChar} (${winningBot})!`,
+    `Concession condition reached: ${cChar} (${concedingBot}) cannot mathematically overcome score deficit.`,
     "concede"
   );
   appendSystemBanner(
-    `🏆 Winner: ${wChar} (${winningBot}) — Final Score: ${winningBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} vs ${concedingBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal}`,
+    `Benchmark winner: ${wChar} (${winningBot}) (${winningBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} to ${concedingBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} pts)`,
     "winner"
   );
 }
@@ -351,13 +351,13 @@ function endSimulationNormal() {
 
   let winnerText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    winnerText = `🏆 Winner: ${STATE.nChar} (N Waths) with ${STATE.nScoreTotal} points!`;
+    winnerText = `Evaluation complete. Winner: ${STATE.nChar} (N Waths) (${STATE.nScoreTotal} to ${STATE.pScoreTotal} pts)`;
     saveWinStat("N Waths");
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    winnerText = `🏆 Winner: ${STATE.pChar} (P Waths) with ${STATE.pScoreTotal} points!`;
+    winnerText = `Evaluation complete. Winner: ${STATE.pChar} (P Waths) (${STATE.pScoreTotal} to ${STATE.nScoreTotal} pts)`;
     saveWinStat("P Waths");
   } else {
-    winnerText = `🤝 It's a Tie! Both actors scored ${STATE.nScoreTotal} points.`;
+    winnerText = `Evaluation complete. Parity reached: Draw at ${STATE.nScoreTotal} pts.`;
     saveWinStat("Tie");
   }
 
@@ -382,21 +382,21 @@ function stopSimulationMidway() {
   if (pCharInput) pCharInput.disabled = false;
   if (scenarioInput) scenarioInput.disabled = false;
 
-  setText(turnStatus, "Arena Stopped Mid-Way by User");
-  setText(roundIndicator, "Roleplay Halted");
-  setText(ribbonStatus, "Match stopped by user judge.");
+  setText(turnStatus, "Benchmark Halted by Operator");
+  setText(roundIndicator, "Halted");
+  setText(ribbonStatus, "Execution halted by operator.");
 
-  appendSystemBanner("🛑 Roleplay duel stopped mid-way by the user!", "stopped");
+  appendSystemBanner("Benchmark halted by operator.", "stopped");
 
   let decisionText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    decisionText = `🏆 Match Decision: ${STATE.nChar} (N Waths) wins on points (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    decisionText = `Interim decision: ${STATE.nChar} (N Waths) leads on points (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
     saveWinStat("N Waths");
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    decisionText = `🏆 Match Decision: ${STATE.pChar} (P Waths) wins on points (${STATE.pScoreTotal} to ${STATE.nScoreTotal})`;
+    decisionText = `Interim decision: ${STATE.pChar} (P Waths) leads on points (${STATE.pScoreTotal} to ${STATE.nScoreTotal})`;
     saveWinStat("P Waths");
   } else {
-    decisionText = `🤝 Match Decision: Draw at stoppage (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    decisionText = `Interim decision: Draw at stoppage (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
     saveWinStat("Tie");
   }
   appendSystemBanner(decisionText, "winner");
@@ -522,15 +522,35 @@ function resetSimulation() {
 
   if (chatFeed) {
     chatFeed.innerHTML = `
-      <div class="welcome-banner">
-        <div class="banner-icon">🎭</div>
-        <h2>Roleplay Arena Rules</h2>
-        <p>
-          Assign any character to <strong>N Waths</strong> and <strong>P Waths</strong>. The neutral <strong>Arena Master</strong> briefs both actors with balanced, strictly 200-character contexts.
-        </p>
-        <p>
-          Each message is limited to <strong>≤ 200 characters</strong>. Rate each response from <strong>1 to 10</strong> based on character depth, dialogue authenticity, and dramatic tension!
-        </p>
+      <div class="welcome-banner compact-welcome">
+        <div class="docket-header">
+          <span class="docket-status-tag">ROLEPLAY DOCKET</span>
+          <span class="docket-id">EVAL-DIRECTIVE // STANDBY</span>
+        </div>
+        <div class="docket-body">
+          <div class="docket-main">
+            <h3>Persona Fidelity & Scenario Duel</h3>
+            <p>Groq GPT serves as the impartial Arena Master, formulating balanced character briefs and staging the scene. Both actors must remain strictly in-character without breaking persona or leaking chain-of-thought planning.</p>
+          </div>
+          <div class="docket-specs-grid">
+            <div class="spec-block">
+              <span class="spec-k">MASTER REFEREE</span>
+              <span class="spec-v">Groq (GPT-OSS 120B)</span>
+            </div>
+            <div class="spec-block">
+              <span class="spec-k">EVALUATION</span>
+              <span class="spec-v">Fidelity Score (1-10)</span>
+            </div>
+            <div class="spec-block">
+              <span class="spec-k">CHAR CAP</span>
+              <span class="spec-v">≤ 200 characters</span>
+            </div>
+            <div class="spec-block">
+              <span class="spec-k">MEMORY STATE</span>
+              <span class="spec-v">In-session isolated</span>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }

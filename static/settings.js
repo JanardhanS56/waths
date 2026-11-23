@@ -1,4 +1,4 @@
-// Waths Arena — Bot Model & Hyperparameter Settings Manager
+// Waths Arena: Bot Model & Hyperparameter Settings Manager
 
 (function () {
   const STORAGE_KEY = "waths_bot_settings";

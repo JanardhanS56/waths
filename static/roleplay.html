@@ -4,13 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roleplay Arena — N Waths vs P Waths</title>
+  <title>Waths Arena | Persona Roleplay Benchmark</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -18,10 +16,10 @@
     <!-- Slim Top Header with Navigation Tabs -->
     <header class="top-nav compact-nav">
       <div class="nav-left">
-        <span class="logo-badge">WATHS</span>
+        <span class="logo-badge">WATHS <span class="sub-label">ROLEPLAY</span></span>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab"> Dialogue</a>
-          <a href="/roleplay" class="nav-tab active"> Roleplay</a>
+          <a href="/" class="nav-tab">Dialogue Benchmark</a>
+          <a href="/roleplay" class="nav-tab active">Roleplay Benchmark</a>
         </nav>
       </div>
 
@@ -30,9 +28,9 @@
           ⚙️ Settings
         </button>
         <div class="specs-badge compact-specs">
-          <span class="spec-item"><span class="dot lime"></span> Mem: <span id="navMemVal">500c</span></span>
-          <span class="spec-item"><span class="dot neutral"></span> Master: Groq</span>
-          <span class="spec-item"><span class="dot white"></span> Limit: <span id="navLimitVal">≤ 200c</span></span>
+          <span class="spec-item"><span class="dot lime"></span> <span class="spec-label">Mem:</span> <span id="navMemVal">500c</span></span>
+          <span class="spec-item"><span class="dot neutral"></span> <span class="spec-label">Referee:</span> Groq GPT</span>
+          <span class="spec-item"><span class="dot white"></span> <span class="spec-label">Cap:</span> <span id="navLimitVal">≤ 200c</span></span>
         </div>
       </div>
     </header>
@@ -235,17 +233,34 @@
     <main class="chat-viewport" id="chatViewport">
       <div class="chat-feed" id="chatFeed">
         <div class="welcome-banner compact-welcome">
-          <div class="banner-icon">🎭</div>
-          <h2>Roleplay Arena</h2>
-          <p>
-            Assign any persona to <strong>N Waths</strong> and <strong>P Waths</strong>. Both actors converse
-            in-character under <strong>≤ 200 characters</strong> with <strong>500 characters of in-session
-              memory</strong>.
-          </p>
-          <p>
-            Score each turn from <strong>1 to 10</strong> for dramatic fidelity. Session memory is purged when the match
-            ends.
-          </p>
+          <div class="docket-header">
+            <span class="docket-status-tag">ROLEPLAY DOCKET</span>
+            <span class="docket-id">EVAL-DIRECTIVE // STANDBY</span>
+          </div>
+          <div class="docket-body">
+            <div class="docket-main">
+              <h3>Persona Fidelity & Scenario Duel</h3>
+              <p>Groq GPT serves as the impartial Arena Master, formulating balanced character briefs and staging the scene. Both actors must remain strictly in-character without breaking persona or leaking chain-of-thought planning.</p>
+            </div>
+            <div class="docket-specs-grid">
+              <div class="spec-block">
+                <span class="spec-k">MASTER REFEREE</span>
+                <span class="spec-v">Groq (GPT-OSS 120B)</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">EVALUATION</span>
+                <span class="spec-v">Fidelity Score (1-10)</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">CHAR CAP</span>
+                <span class="spec-v">≤ 200 characters</span>
+              </div>
+              <div class="spec-block">
+                <span class="spec-k">MEMORY STATE</span>
+                <span class="spec-v">In-session isolated</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -438,8 +453,8 @@
     </div>
   </div>
 
-  <script src="settings.js?v=5"></script>
-  <script src="roleplay.js?v=5"></script>
+  <script src="settings.js?v=6"></script>
+  <script src="roleplay.js?v=6"></script>
 </body>
 
 </html>

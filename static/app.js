@@ -291,11 +291,11 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   saveWinStat(winningBot);
 
   appendSystemBanner(
-    `🏳️ ${concedingBot} has conceded! Even with maximum 10/10 scores on remaining messages, it cannot catch up. ${winningBot} wins the Arena!`,
+    `Concession condition reached: ${concedingBot} cannot mathematically overcome score deficit.`,
     "concede"
   );
   appendSystemBanner(
-    `🏆 Winner: ${winningBot} (Final Score: ${winningBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} vs ${concedingBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal})`,
+    `Benchmark winner: ${winningBot} (${winningBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} to ${concedingBot === "N Waths" ? STATE.nScoreTotal : STATE.pScoreTotal} pts)`,
     "winner"
   );
 }
@@ -315,13 +315,13 @@ function endSimulationNormal() {
 
   let winnerText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    winnerText = `🏆 Winner: N Waths with ${STATE.nScoreTotal} points!`;
+    winnerText = `Evaluation complete. Winner: N Waths (${STATE.nScoreTotal} to ${STATE.pScoreTotal} pts)`;
     saveWinStat("N Waths");
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    winnerText = `🏆 Winner: P Waths with ${STATE.pScoreTotal} points!`;
+    winnerText = `Evaluation complete. Winner: P Waths (${STATE.pScoreTotal} to ${STATE.nScoreTotal} pts)`;
     saveWinStat("P Waths");
   } else {
-    winnerText = `🤝 It's a Tie! Both bots scored ${STATE.nScoreTotal} points.`;
+    winnerText = `Evaluation complete. Parity reached: Draw at ${STATE.nScoreTotal} pts.`;
     saveWinStat("Tie");
   }
 
@@ -344,21 +344,21 @@ function stopSimulationMidway() {
   startBtn.disabled = false;
   topicInput.disabled = false;
 
-  turnStatus.textContent = "Arena Stopped Mid-Way by User";
-  roundIndicator.textContent = "Fight Halted";
-  ribbonStatus.textContent = "Match stopped by user judge.";
+  turnStatus.textContent = "Benchmark Halted by Operator";
+  roundIndicator.textContent = "Halted";
+  ribbonStatus.textContent = "Execution halted by operator.";
 
-  appendSystemBanner("🛑 Arena fight stopped mid-way by the user!", "stopped");
+  appendSystemBanner("Benchmark halted by operator.", "stopped");
 
   let decisionText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    decisionText = `🏆 Match Decision: N Waths wins on points (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    decisionText = `Interim decision: N Waths leads on points (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
     saveWinStat("N Waths");
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    decisionText = `🏆 Match Decision: P Waths wins on points (${STATE.pScoreTotal} to ${STATE.nScoreTotal})`;
+    decisionText = `Interim decision: P Waths leads on points (${STATE.pScoreTotal} to ${STATE.nScoreTotal})`;
     saveWinStat("P Waths");
   } else {
-    decisionText = `🤝 Match Decision: Draw at stoppage (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    decisionText = `Interim decision: Draw at stoppage (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
     saveWinStat("Tie");
   }
   appendSystemBanner(decisionText, "winner");
@@ -424,15 +424,35 @@ function resetSimulation() {
   nextTurnBtn.disabled = true;
 
   chatFeed.innerHTML = `
-    <div class="welcome-banner">
-      <div class="banner-icon">⚔️</div>
-      <h2>Dialogue Simulation Rules</h2>
-      <p>
-        <strong>N Waths</strong> speaks first on the selected topic. Both bots receive an equal allocation of messages (configurable up to 20 each) and strictly converse under <strong>≤ 200 characters</strong> with minimal context memory.
-      </p>
-      <p>
-        Score each message from <strong>1 to 10</strong>. The bot with highest cumulative score wins. If a bot mathematically cannot win or the fight is stopped, the arena halts!
-      </p>
+    <div class="welcome-banner compact-welcome">
+      <div class="docket-header">
+        <span class="docket-status-tag">EVALUATION DOCKET</span>
+        <span class="docket-id">BENCHMARK-RUN // IDLE</span>
+      </div>
+      <div class="docket-body">
+        <div class="docket-main">
+          <h3>Head-to-Head Dialogue Evaluation</h3>
+          <p>Two distinct LLM architectures run synchronous, turn-based dialogue under strict character and memory constraints. Rate every statement on logic, punchiness, and topic relevance.</p>
+        </div>
+        <div class="docket-specs-grid">
+          <div class="spec-block">
+            <span class="spec-k">N ACTOR</span>
+            <span class="spec-v">NVIDIA NIM (Stepfun)</span>
+          </div>
+          <div class="spec-block">
+            <span class="spec-k">P ACTOR</span>
+            <span class="spec-v">OpenRouter (Llama 3.2)</span>
+          </div>
+          <div class="spec-block">
+            <span class="spec-k">CHAR CAP</span>
+            <span class="spec-v">≤ 200 characters</span>
+          </div>
+          <div class="spec-block">
+            <span class="spec-k">MEMORY</span>
+            <span class="spec-v">500 char rolling session</span>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
