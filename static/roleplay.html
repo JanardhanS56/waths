@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,11 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <div class="app-container">
     <!-- Slim Top Header with Navigation Tabs -->
@@ -16,15 +20,20 @@
       <div class="nav-left">
         <span class="logo-badge">WATHS</span>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab">⚔️ Dialogue</a>
-          <a href="/roleplay" class="nav-tab active">🎭 Roleplay</a>
+          <a href="/" class="nav-tab"> Dialogue</a>
+          <a href="/roleplay" class="nav-tab active"> Roleplay</a>
         </nav>
       </div>
 
-      <div class="specs-badge compact-specs">
-        <span class="spec-item"><span class="dot lime"></span> Mem: 500c (Session)</span>
-        <span class="spec-item"><span class="dot neutral"></span> Master: Groq</span>
-        <span class="spec-item"><span class="dot white"></span> Limit: ≤ 200c</span>
+      <div class="nav-right">
+        <button id="settingsBtn" class="btn-settings-nav" title="Configure Bot Models & Parameters">
+          ⚙️ Settings
+        </button>
+        <div class="specs-badge compact-specs">
+          <span class="spec-item"><span class="dot lime"></span> Mem: <span id="navMemVal">500c</span></span>
+          <span class="spec-item"><span class="dot neutral"></span> Master: Groq</span>
+          <span class="spec-item"><span class="dot white"></span> Limit: <span id="navLimitVal">≤ 200c</span></span>
+        </div>
       </div>
     </header>
 
@@ -34,37 +43,21 @@
       <div class="roleplay-main-row">
         <div class="char-pill-input">
           <span class="char-dot lime"></span>
-          <input 
-            type="text" 
-            id="nCharInput" 
-            placeholder="N Actor (e.g. Kira)" 
-            maxlength="45"
-            value="Kira (Light Yagami)"
-            title="N Waths character persona"
-          />
+          <input type="text" id="nCharInput" placeholder="N Actor (e.g. Kira)" maxlength="45"
+            value="Kira (Light Yagami)" title="N Waths character persona" />
         </div>
 
         <span class="vs-badge">VS</span>
 
         <div class="char-pill-input">
           <span class="char-dot sky"></span>
-          <input 
-            type="text" 
-            id="pCharInput" 
-            placeholder="P Actor (e.g. L)" 
-            maxlength="45"
-            value="L (L Lawliet)"
-            title="P Waths character persona"
-          />
+          <input type="text" id="pCharInput" placeholder="P Actor (e.g. L)" maxlength="45" value="L (L Lawliet)"
+            title="P Waths character persona" />
         </div>
 
         <div class="scenario-flex-input">
-          <input 
-            type="text" 
-            id="scenarioInput" 
-            placeholder="Scenario / Setting (e.g. Quiet Tokyo coffee shop interrogation)..." 
-            maxlength="150"
-          />
+          <input type="text" id="scenarioInput"
+            placeholder="Scenario / Setting (e.g. Quiet Tokyo coffee shop interrogation)..." maxlength="150" />
         </div>
 
         <div class="action-buttons-group">
@@ -89,23 +82,21 @@
             <button class="limit-pill" data-limit="10">10</button>
             <button class="limit-pill" data-limit="15">15</button>
             <button class="limit-pill active" data-limit="20">20</button>
-            <input 
-              type="number" 
-              id="customLimitInput" 
-              min="1" 
-              max="20" 
-              placeholder="Custom" 
-              title="Custom rounds (1-20)"
-            />
+            <input type="number" id="customLimitInput" min="1" max="20" placeholder="Custom"
+              title="Custom rounds (1-20)" />
           </div>
         </div>
 
         <div class="quick-topics compact-topics">
           <span class="quick-label">Presets:</span>
-          <button class="preset-pill" data-n="Kira (Light Yagami)" data-p="L (L Lawliet)" data-scenario="Quiet Tokyo coffee shop, testing each other with veiled deductions">Kira vs L</button>
-          <button class="preset-pill" data-n="The Joker" data-p="Batman" data-scenario="Interrogation room in Arkham Asylum during a blackout">Joker vs Batman</button>
-          <button class="preset-pill" data-n="Sherlock Holmes" data-p="Professor Moriarty" data-scenario="Foggy evening on Baker Street before departure">Sherlock vs Moriarty</button>
-          <button class="preset-pill" data-n="Tony Stark" data-p="Steve Rogers" data-scenario="Debating Sokovia Accords in the hangar">Iron Man vs Cap</button>
+          <button class="preset-pill" data-n="Kira (Light Yagami)" data-p="L (L Lawliet)"
+            data-scenario="Quiet Tokyo coffee shop, testing each other with veiled deductions">Kira vs L</button>
+          <button class="preset-pill" data-n="The Joker" data-p="Batman"
+            data-scenario="Interrogation room in Arkham Asylum during a blackout">Joker vs Batman</button>
+          <button class="preset-pill" data-n="Sherlock Holmes" data-p="Professor Moriarty"
+            data-scenario="Foggy evening on Baker Street before departure">Sherlock vs Moriarty</button>
+          <button class="preset-pill" data-n="Tony Stark" data-p="Steve Rogers"
+            data-scenario="Debating Sokovia Accords in the hangar">Iron Man vs Cap</button>
         </div>
       </div>
     </section>
@@ -140,7 +131,8 @@
     <section class="scoreboard compact-scoreboard">
       <!-- N Waths Card with Dropdown -->
       <div class="bot-card-wrapper">
-        <div class="bot-card n-waths-card compact-card" id="nCard" role="button" tabindex="0" title="Click for model profile & telemetry">
+        <div class="bot-card n-waths-card compact-card" id="nCard" role="button" tabindex="0"
+          title="Click for model profile & telemetry">
           <div class="bot-badge">
             <span class="bot-avatar lime-avatar sm-avatar">N</span>
             <div class="bot-info-col">
@@ -165,13 +157,19 @@
             <span class="badge lime-tag">Active</span>
           </div>
           <div class="dropdown-body">
-            <div class="info-row"><span class="info-label">Provider</span><span class="info-val" id="nProviderVal">Loading...</span></div>
-            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono" id="nModelVal">Loading...</span></div>
+            <div class="info-row"><span class="info-label">Provider</span><span class="info-val"
+                id="nProviderVal">Loading...</span></div>
+            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono"
+                id="nModelVal">Loading...</span></div>
             <div class="divider"></div>
-            <div class="info-row"><span class="info-label">Roleplay Wins</span><span class="info-val highlight-lime" id="nWinsVal">0 wins (0%)</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono" id="nPromptTokVal">0</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono" id="nCompTokVal">0</span></div>
-            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span class="info-val font-mono highlight-lime" id="nTotalTokVal">0</span></div>
+            <div class="info-row"><span class="info-label">Roleplay Wins</span><span class="info-val highlight-lime"
+                id="nWinsVal">0 wins (0%)</span></div>
+            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono"
+                id="nPromptTokVal">0</span></div>
+            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono"
+                id="nCompTokVal">0</span></div>
+            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span
+                class="info-val font-mono highlight-lime" id="nTotalTokVal">0</span></div>
           </div>
         </div>
       </div>
@@ -189,7 +187,8 @@
 
       <!-- P Waths Card with Dropdown -->
       <div class="bot-card-wrapper">
-        <div class="bot-card p-waths-card compact-card" id="pCard" role="button" tabindex="0" title="Click for model profile & telemetry">
+        <div class="bot-card p-waths-card compact-card" id="pCard" role="button" tabindex="0"
+          title="Click for model profile & telemetry">
           <div class="bot-badge">
             <span class="bot-avatar sky-avatar sm-avatar">P</span>
             <div class="bot-info-col">
@@ -214,13 +213,19 @@
             <span class="badge sky-tag">Active</span>
           </div>
           <div class="dropdown-body">
-            <div class="info-row"><span class="info-label">Provider</span><span class="info-val" id="pProviderVal">Loading...</span></div>
-            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono" id="pModelVal">Loading...</span></div>
+            <div class="info-row"><span class="info-label">Provider</span><span class="info-val"
+                id="pProviderVal">Loading...</span></div>
+            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono"
+                id="pModelVal">Loading...</span></div>
             <div class="divider"></div>
-            <div class="info-row"><span class="info-label">Roleplay Wins</span><span class="info-val highlight-sky" id="pWinsVal">0 wins (0%)</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono" id="pPromptTokVal">0</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono" id="pCompTokVal">0</span></div>
-            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span class="info-val font-mono highlight-sky" id="pTotalTokVal">0</span></div>
+            <div class="info-row"><span class="info-label">Roleplay Wins</span><span class="info-val highlight-sky"
+                id="pWinsVal">0 wins (0%)</span></div>
+            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono"
+                id="pPromptTokVal">0</span></div>
+            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono"
+                id="pCompTokVal">0</span></div>
+            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span
+                class="info-val font-mono highlight-sky" id="pTotalTokVal">0</span></div>
           </div>
         </div>
       </div>
@@ -233,10 +238,13 @@
           <div class="banner-icon">🎭</div>
           <h2>Roleplay Arena</h2>
           <p>
-            Assign any persona to <strong>N Waths</strong> and <strong>P Waths</strong>. Both actors converse in-character under <strong>≤ 200 characters</strong> with <strong>500 characters of in-session memory</strong>.
+            Assign any persona to <strong>N Waths</strong> and <strong>P Waths</strong>. Both actors converse
+            in-character under <strong>≤ 200 characters</strong> with <strong>500 characters of in-session
+              memory</strong>.
           </p>
           <p>
-            Score each turn from <strong>1 to 10</strong> for dramatic fidelity. Session memory is purged when the match ends.
+            Score each turn from <strong>1 to 10</strong> for dramatic fidelity. Session memory is purged when the match
+            ends.
           </p>
         </div>
       </div>
@@ -260,6 +268,178 @@
     </footer>
   </div>
 
-  <script src="roleplay.js?v=4"></script>
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" style="display: none;">
+    <div class="settings-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⚙️</span>
+          <h3>Arena Bot Configurations</h3>
+        </div>
+        <button class="modal-close-btn" id="closeSettingsBtn" title="Close Settings">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="settings-grid">
+          <!-- N Waths (NVIDIA NIM) Settings Column -->
+          <div class="settings-col n-settings-col">
+            <div class="col-header">
+              <span class="bot-indicator lime-indicator"></span>
+              <h4>N Waths (NVIDIA NIM)</h4>
+            </div>
+
+            <!-- Model -->
+            <div class="setting-group">
+              <label for="nModelSelect">Model Selection</label>
+              <select id="nModelSelect" class="form-select">
+                <option value="stepfun-ai/step-5-preview">stepfun-ai/step-5-preview (Default)</option>
+                <option value="google/gemma-3-12b-it">google/gemma-3-12b-it (Fast & High Fidelity)</option>
+                <option value="moonshotai/kimi-k3.1-pro">moonshotai/kimi-k3.1-pro</option>
+                <option value="z-ai/glm-5.3-flash">z-ai/glm-5.3-flash</option>
+                <option value="minimaxai/minimax-m3.1-flash">minimaxai/minimax-m3.1-flash</option>
+                <option value="custom">Custom Model ID...</option>
+              </select>
+              <input type="text" id="nCustomModelInput" class="form-input custom-model-input"
+                placeholder="Enter custom NVIDIA model ID" style="display: none;" />
+            </div>
+
+            <!-- Temperature -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nTempRange">Temperature</label>
+                <span class="val-display" id="nTempVal">0.70</span>
+              </div>
+              <input type="range" id="nTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
+              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
+            </div>
+
+            <!-- Context Memory -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nMemRange">Context Memory Limit</label>
+                <span class="val-display" id="nMemVal">500 chars</span>
+              </div>
+              <input type="range" id="nMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
+              <span class="setting-help">Max characters kept from current session history</span>
+            </div>
+
+            <!-- Output Message Limit -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nLimitRange">Output Character Limit</label>
+                <span class="val-display" id="nLimitVal">200 chars</span>
+              </div>
+              <input type="range" id="nLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
+              <span class="setting-help">Strict character ceiling per bot response</span>
+            </div>
+
+            <!-- Other Important Model Settings -->
+            <div class="advanced-divider"><span>Advanced Parameters</span></div>
+
+            <div class="setting-row-duo">
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="nTopPRange">Top-P</label>
+                  <span class="val-display" id="nTopPVal">0.90</span>
+                </div>
+                <input type="range" id="nTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
+              </div>
+
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="nMaxTokensInput">Max Tokens</label>
+                </div>
+                <input type="number" id="nMaxTokensInput" min="50" max="800" value="450" class="form-input num-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- P Waths (OpenRouter) Settings Column -->
+          <div class="settings-col p-settings-col">
+            <div class="col-header">
+              <span class="bot-indicator sky-indicator"></span>
+              <h4>P Waths (OpenRouter)</h4>
+            </div>
+
+            <!-- Model -->
+            <div class="setting-group">
+              <label for="pModelSelect">Model Selection</label>
+              <select id="pModelSelect" class="form-select">
+                <option value="meta-llama/llama-3.2-3b-instruct">meta-llama/llama-3.2-3b-instruct (Default)</option>
+                <option value="google/gemini-2.0-flash-001">google/gemini-2.0-flash-001</option>
+                <option value="anthropic/claude-3.5-haiku">anthropic/claude-3.5-haiku</option>
+                <option value="deepseek/deepseek-chat">deepseek/deepseek-chat</option>
+                <option value="custom">Custom Model ID...</option>
+              </select>
+              <input type="text" id="pCustomModelInput" class="form-input custom-model-input"
+                placeholder="Enter custom OpenRouter model ID" style="display: none;" />
+            </div>
+
+            <!-- Temperature -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pTempRange">Temperature</label>
+                <span class="val-display" id="pTempVal">0.70</span>
+              </div>
+              <input type="range" id="pTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
+              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
+            </div>
+
+            <!-- Context Memory -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pMemRange">Context Memory Limit</label>
+                <span class="val-display" id="pMemVal">500 chars</span>
+              </div>
+              <input type="range" id="pMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
+              <span class="setting-help">Max characters kept from current session history</span>
+            </div>
+
+            <!-- Output Message Limit -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pLimitRange">Output Character Limit</label>
+                <span class="val-display" id="pLimitVal">200 chars</span>
+              </div>
+              <input type="range" id="pLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
+              <span class="setting-help">Strict character ceiling per bot response</span>
+            </div>
+
+            <!-- Other Important Model Settings -->
+            <div class="advanced-divider"><span>Advanced Parameters</span></div>
+
+            <div class="setting-row-duo">
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="pTopPRange">Top-P</label>
+                  <span class="val-display" id="pTopPVal">0.90</span>
+                </div>
+                <input type="range" id="pTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
+              </div>
+
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="pMaxTokensInput">Max Tokens</label>
+                </div>
+                <input type="number" id="pMaxTokensInput" min="50" max="800" value="200" class="form-input num-input" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="resetSettingsBtn" class="btn btn-secondary">Reset to Defaults</button>
+        <div class="footer-right">
+          <button id="cancelSettingsBtn" class="btn btn-ghost">Cancel</button>
+          <button id="saveSettingsBtn" class="btn btn-primary">Save & Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js?v=5"></script>
+  <script src="roleplay.js?v=5"></script>
 </body>
+
 </html>

@@ -21,10 +21,15 @@
         </nav>
       </div>
 
-      <div class="specs-badge compact-specs">
-        <span class="spec-item"><span class="dot lime"></span> Mem: 500c (Session)</span>
-        <span class="spec-item"><span class="dot sky"></span> Limit: ≤ 200c</span>
-        <span class="spec-item"><span class="dot white"></span> Equal Turns</span>
+      <div class="nav-right">
+        <button id="settingsBtn" class="btn-settings-nav" title="Configure Bot Models & Parameters">
+          ⚙️ Settings
+        </button>
+        <div class="specs-badge compact-specs">
+          <span class="spec-item"><span class="dot lime"></span> Mem: <span id="navMemVal">500c</span></span>
+          <span class="spec-item"><span class="dot sky"></span> Limit: <span id="navLimitVal">≤ 200c</span></span>
+          <span class="spec-item"><span class="dot white"></span> Equal Turns</span>
+        </div>
       </div>
     </header>
 
@@ -204,6 +209,175 @@
     </footer>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" style="display: none;">
+    <div class="settings-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">⚙️</span>
+          <h3>Arena Bot Configurations</h3>
+        </div>
+        <button class="modal-close-btn" id="closeSettingsBtn" title="Close Settings">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="settings-grid">
+          <!-- N Waths (NVIDIA NIM) Settings Column -->
+          <div class="settings-col n-settings-col">
+            <div class="col-header">
+              <span class="bot-indicator lime-indicator"></span>
+              <h4>N Waths (NVIDIA NIM)</h4>
+            </div>
+
+            <!-- Model -->
+            <div class="setting-group">
+              <label for="nModelSelect">Model Selection</label>
+              <select id="nModelSelect" class="form-select">
+                <option value="stepfun-ai/step-5-preview">stepfun-ai/step-5-preview (Default)</option>
+                <option value="google/gemma-3-12b-it">google/gemma-3-12b-it (Fast & High Fidelity)</option>
+                <option value="moonshotai/kimi-k3.1-pro">moonshotai/kimi-k3.1-pro</option>
+                <option value="z-ai/glm-5.3-flash">z-ai/glm-5.3-flash</option>
+                <option value="minimaxai/minimax-m3.1-flash">minimaxai/minimax-m3.1-flash</option>
+                <option value="custom">Custom Model ID...</option>
+              </select>
+              <input type="text" id="nCustomModelInput" class="form-input custom-model-input" placeholder="Enter custom NVIDIA model ID" style="display: none;" />
+            </div>
+
+            <!-- Temperature -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nTempRange">Temperature</label>
+                <span class="val-display" id="nTempVal">0.70</span>
+              </div>
+              <input type="range" id="nTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
+              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
+            </div>
+
+            <!-- Context Memory -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nMemRange">Context Memory Limit</label>
+                <span class="val-display" id="nMemVal">500 chars</span>
+              </div>
+              <input type="range" id="nMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
+              <span class="setting-help">Max characters kept from current session history</span>
+            </div>
+
+            <!-- Output Message Limit -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="nLimitRange">Output Character Limit</label>
+                <span class="val-display" id="nLimitVal">200 chars</span>
+              </div>
+              <input type="range" id="nLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
+              <span class="setting-help">Strict character ceiling per bot response</span>
+            </div>
+
+            <!-- Other Important Model Settings -->
+            <div class="advanced-divider"><span>Advanced Parameters</span></div>
+
+            <div class="setting-row-duo">
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="nTopPRange">Top-P</label>
+                  <span class="val-display" id="nTopPVal">0.90</span>
+                </div>
+                <input type="range" id="nTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
+              </div>
+
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="nMaxTokensInput">Max Tokens</label>
+                </div>
+                <input type="number" id="nMaxTokensInput" min="50" max="800" value="450" class="form-input num-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- P Waths (OpenRouter) Settings Column -->
+          <div class="settings-col p-settings-col">
+            <div class="col-header">
+              <span class="bot-indicator sky-indicator"></span>
+              <h4>P Waths (OpenRouter)</h4>
+            </div>
+
+            <!-- Model -->
+            <div class="setting-group">
+              <label for="pModelSelect">Model Selection</label>
+              <select id="pModelSelect" class="form-select">
+                <option value="meta-llama/llama-3.2-3b-instruct">meta-llama/llama-3.2-3b-instruct (Default)</option>
+                <option value="google/gemini-2.0-flash-001">google/gemini-2.0-flash-001</option>
+                <option value="anthropic/claude-3.5-haiku">anthropic/claude-3.5-haiku</option>
+                <option value="deepseek/deepseek-chat">deepseek/deepseek-chat</option>
+                <option value="custom">Custom Model ID...</option>
+              </select>
+              <input type="text" id="pCustomModelInput" class="form-input custom-model-input" placeholder="Enter custom OpenRouter model ID" style="display: none;" />
+            </div>
+
+            <!-- Temperature -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pTempRange">Temperature</label>
+                <span class="val-display" id="pTempVal">0.70</span>
+              </div>
+              <input type="range" id="pTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
+              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
+            </div>
+
+            <!-- Context Memory -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pMemRange">Context Memory Limit</label>
+                <span class="val-display" id="pMemVal">500 chars</span>
+              </div>
+              <input type="range" id="pMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
+              <span class="setting-help">Max characters kept from current session history</span>
+            </div>
+
+            <!-- Output Message Limit -->
+            <div class="setting-group">
+              <div class="label-row">
+                <label for="pLimitRange">Output Character Limit</label>
+                <span class="val-display" id="pLimitVal">200 chars</span>
+              </div>
+              <input type="range" id="pLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
+              <span class="setting-help">Strict character ceiling per bot response</span>
+            </div>
+
+            <!-- Other Important Model Settings -->
+            <div class="advanced-divider"><span>Advanced Parameters</span></div>
+
+            <div class="setting-row-duo">
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="pTopPRange">Top-P</label>
+                  <span class="val-display" id="pTopPVal">0.90</span>
+                </div>
+                <input type="range" id="pTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
+              </div>
+
+              <div class="setting-group-half">
+                <div class="label-row">
+                  <label for="pMaxTokensInput">Max Tokens</label>
+                </div>
+                <input type="number" id="pMaxTokensInput" min="50" max="800" value="200" class="form-input num-input" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="resetSettingsBtn" class="btn btn-secondary">Reset to Defaults</button>
+        <div class="footer-right">
+          <button id="cancelSettingsBtn" class="btn btn-ghost">Cancel</button>
+          <button id="saveSettingsBtn" class="btn btn-primary">Save & Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
