@@ -64,6 +64,20 @@
     const limitEl = document.getElementById("navLimitVal");
     if (memEl) memEl.textContent = `${currentSettings.n.memory_limit}c`;
     if (limitEl) limitEl.textContent = `≤ ${currentSettings.n.max_chars}c`;
+
+    // Also update card gauges
+    const nMemG = document.getElementById("nMemGaugeVal");
+    const pMemG = document.getElementById("pMemGaugeVal");
+    if (nMemG) nMemG.textContent = currentSettings.n.memory_limit;
+    if (pMemG) pMemG.textContent = currentSettings.p.memory_limit;
+  }
+
+  function updateGaugeRing(svgId, percentage) {
+    const el = document.getElementById(svgId);
+    if (el) {
+      const pct = Math.max(5, Math.min(100, Math.round(percentage)));
+      el.setAttribute("stroke-dasharray", `${pct}, 100`);
+    }
   }
 
   function syncFormWithSettings(settings) {
@@ -79,6 +93,7 @@
     const nTopPRange = document.getElementById("nTopPRange");
     const nTopPVal = document.getElementById("nTopPVal");
     const nMaxTokensInput = document.getElementById("nMaxTokensInput");
+    const nTokensVal = document.getElementById("nTokensVal");
 
     if (nModelSel && nCustomInput) {
       const options = Array.from(nModelSel.options).map(o => o.value);
@@ -93,15 +108,29 @@
       }
     }
 
-    if (nTempRange) nTempRange.value = settings.n.temperature;
-    if (nTempVal) nTempVal.textContent = Number(settings.n.temperature).toFixed(2);
-    if (nMemRange) nMemRange.value = settings.n.memory_limit;
-    if (nMemVal) nMemVal.textContent = `${settings.n.memory_limit} chars`;
-    if (nLimitRange) nLimitRange.value = settings.n.max_chars;
-    if (nLimitVal) nLimitVal.textContent = `${settings.n.max_chars} chars`;
-    if (nTopPRange) nTopPRange.value = settings.n.top_p;
-    if (nTopPVal) nTopPVal.textContent = Number(settings.n.top_p).toFixed(2);
-    if (nMaxTokensInput) nMaxTokensInput.value = settings.n.max_tokens;
+    if (nTempRange) {
+      nTempRange.value = settings.n.temperature;
+      if (nTempVal) nTempVal.textContent = Number(settings.n.temperature).toFixed(2);
+      updateGaugeRing("nTempGaugeSvg", (settings.n.temperature / 1.5) * 100);
+    }
+    if (nMemRange) {
+      nMemRange.value = settings.n.memory_limit;
+      if (nMemVal) nMemVal.textContent = settings.n.memory_limit;
+      updateGaugeRing("nMemGaugeSvg", (settings.n.memory_limit / 2000) * 100);
+    }
+    if (nLimitRange) {
+      nLimitRange.value = settings.n.max_chars;
+      if (nLimitVal) nLimitVal.textContent = `${settings.n.max_chars}c`;
+      updateGaugeRing("nLimitGaugeSvg", (settings.n.max_chars / 1000) * 100);
+    }
+    if (nTopPRange) {
+      nTopPRange.value = settings.n.top_p;
+      if (nTopPVal) nTopPVal.textContent = Number(settings.n.top_p).toFixed(2);
+    }
+    if (nMaxTokensInput) {
+      nMaxTokensInput.value = settings.n.max_tokens;
+      if (nTokensVal) nTokensVal.textContent = settings.n.max_tokens;
+    }
 
     // P Waths
     const pModelSel = document.getElementById("pModelSelect");
@@ -115,6 +144,7 @@
     const pTopPRange = document.getElementById("pTopPRange");
     const pTopPVal = document.getElementById("pTopPVal");
     const pMaxTokensInput = document.getElementById("pMaxTokensInput");
+    const pTokensVal = document.getElementById("pTokensVal");
 
     if (pModelSel && pCustomInput) {
       const options = Array.from(pModelSel.options).map(o => o.value);
@@ -129,15 +159,29 @@
       }
     }
 
-    if (pTempRange) pTempRange.value = settings.p.temperature;
-    if (pTempVal) pTempVal.textContent = Number(settings.p.temperature).toFixed(2);
-    if (pMemRange) pMemRange.value = settings.p.memory_limit;
-    if (pMemVal) pMemVal.textContent = `${settings.p.memory_limit} chars`;
-    if (pLimitRange) pLimitRange.value = settings.p.max_chars;
-    if (pLimitVal) pLimitVal.textContent = `${settings.p.max_chars} chars`;
-    if (pTopPRange) pTopPRange.value = settings.p.top_p;
-    if (pTopPVal) pTopPVal.textContent = Number(settings.p.top_p).toFixed(2);
-    if (pMaxTokensInput) pMaxTokensInput.value = settings.p.max_tokens;
+    if (pTempRange) {
+      pTempRange.value = settings.p.temperature;
+      if (pTempVal) pTempVal.textContent = Number(settings.p.temperature).toFixed(2);
+      updateGaugeRing("pTempGaugeSvg", (settings.p.temperature / 1.5) * 100);
+    }
+    if (pMemRange) {
+      pMemRange.value = settings.p.memory_limit;
+      if (pMemVal) pMemVal.textContent = settings.p.memory_limit;
+      updateGaugeRing("pMemGaugeSvg", (settings.p.memory_limit / 2000) * 100);
+    }
+    if (pLimitRange) {
+      pLimitRange.value = settings.p.max_chars;
+      if (pLimitVal) pLimitVal.textContent = `${settings.p.max_chars}c`;
+      updateGaugeRing("pLimitGaugeSvg", (settings.p.max_chars / 1000) * 100);
+    }
+    if (pTopPRange) {
+      pTopPRange.value = settings.p.top_p;
+      if (pTopPVal) pTopPVal.textContent = Number(settings.p.top_p).toFixed(2);
+    }
+    if (pMaxTokensInput) {
+      pMaxTokensInput.value = settings.p.max_tokens;
+      if (pTokensVal) pTokensVal.textContent = settings.p.max_tokens;
+    }
   }
 
   function readSettingsFromForm() {
@@ -212,6 +256,11 @@
     const resetBtn = document.getElementById("resetSettingsBtn");
     const modal = document.getElementById("settingsModal");
 
+    const quickN = document.getElementById("openNSettingsQuick");
+    const quickP = document.getElementById("openPSettingsQuick");
+    if (quickN) quickN.addEventListener("click", openModal);
+    if (quickP) quickP.addEventListener("click", openModal);
+
     if (settingsBtn) settingsBtn.addEventListener("click", openModal);
     if (closeBtn) closeBtn.addEventListener("click", closeModal);
     if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
@@ -222,26 +271,51 @@
       });
     }
 
-    // Dynamic label updates on range slider input
-    const bindRange = (rangeId, valId, suffix = "") => {
+    // Dynamic slider updates with circular gauge animation
+    const bindRange = (rangeId, valId, gaugeId, maxVal, suffix = "") => {
       const range = document.getElementById(rangeId);
       const val = document.getElementById(valId);
-      if (range && val) {
+      if (range) {
         range.addEventListener("input", () => {
-          val.textContent = `${range.value}${suffix}`;
+          if (val) val.textContent = `${range.value}${suffix}`;
+          if (gaugeId) {
+            const pct = (parseFloat(range.value) / maxVal) * 100;
+            updateGaugeRing(gaugeId, pct);
+          }
         });
       }
     };
 
-    bindRange("nTempRange", "nTempVal");
-    bindRange("nMemRange", "nMemVal", " chars");
-    bindRange("nLimitRange", "nLimitVal", " chars");
-    bindRange("nTopPRange", "nTopPVal");
+    bindRange("nTempRange", "nTempVal", "nTempGaugeSvg", 1.5);
+    bindRange("nMemRange", "nMemVal", "nMemGaugeSvg", 2000);
+    bindRange("nLimitRange", "nLimitVal", "nLimitGaugeSvg", 1000, "c");
 
-    bindRange("pTempRange", "pTempVal");
-    bindRange("pMemRange", "pMemVal", " chars");
-    bindRange("pLimitRange", "pLimitVal", " chars");
-    bindRange("pTopPRange", "pTopPVal");
+    bindRange("pTempRange", "pTempVal", "pTempGaugeSvg", 1.5);
+    bindRange("pMemRange", "pMemVal", "pMemGaugeSvg", 2000);
+    bindRange("pLimitRange", "pLimitVal", "pLimitGaugeSvg", 1000, "c");
+
+    // Steppers setup
+    const setupStepper = (decId, incId, inputId, valId, step, min, max, isFloat = false) => {
+      const dec = document.getElementById(decId);
+      const inc = document.getElementById(incId);
+      const inp = document.getElementById(inputId);
+      const val = document.getElementById(valId);
+      if (!inp) return;
+
+      const update = (newVal) => {
+        const clamped = Math.max(min, Math.min(max, newVal));
+        inp.value = isFloat ? clamped.toFixed(2) : Math.round(clamped);
+        if (val) val.textContent = inp.value;
+      };
+
+      if (dec) dec.addEventListener("click", () => update(parseFloat(inp.value) - step));
+      if (inc) inc.addEventListener("click", () => update(parseFloat(inp.value) + step));
+    };
+
+    setupStepper("nTopPDec", "nTopPInc", "nTopPRange", "nTopPVal", 0.05, 0.1, 1.0, true);
+    setupStepper("pTopPDec", "pTopPInc", "pTopPRange", "pTopPVal", 0.05, 0.1, 1.0, true);
+    setupStepper("nTokensDec", "nTokensInc", "nMaxTokensInput", "nTokensVal", 50, 50, 1000, false);
+    setupStepper("pTokensDec", "pTokensInc", "pMaxTokensInput", "pTokensVal", 50, 50, 1000, false);
 
     // Custom model input toggles
     const nModelSel = document.getElementById("nModelSelect");
@@ -275,8 +349,6 @@
         const newSettings = readSettingsFromForm();
         saveStoredSettings(newSettings);
         closeModal();
-
-        // Dispatch a custom event so active arenas can react
         window.dispatchEvent(new CustomEvent("waths-settings-updated", { detail: newSettings }));
       });
     }
@@ -284,14 +356,12 @@
     updateNavBadges();
   }
 
-  // Auto-init when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initSettingsModal);
   } else {
     initSettingsModal();
   }
 
-  // Global API
   window.WathsSettings = {
     getSettings: () => ({ ...currentSettings }),
     getBotConfig: getBotConfig,

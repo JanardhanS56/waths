@@ -1,402 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waths Arena | Dialogue Evaluation Benchmark</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Waths Arena | Dialogue Benchmark</title>
+  <link rel="stylesheet" href="style.css?v=7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
   <div class="app-container">
-    <!-- Slim Top Header with Navigation Tabs -->
-    <header class="top-nav compact-nav">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
       <div class="nav-left">
-        <span class="logo-badge">WATHS <span class="sub-label">EVAL</span></span>
+        <a href="/" class="brand-group">
+          <span class="brand-waths">WATHS</span>
+          <span class="badge-eval">EVAL</span>
+        </a>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab active">Dialogue Benchmark</a>
-          <a href="/roleplay" class="nav-tab">Roleplay Benchmark</a>
+          <a href="/" class="nav-tab active">
+            Dialogue Benchmark
+            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
+          </a>
+          <a href="/roleplay" class="nav-tab">
+            Roleplay Benchmark
+            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
+          </a>
         </nav>
       </div>
 
       <div class="nav-right">
-        <button id="settingsBtn" class="btn-settings-nav" title="Configure Bot Models & Parameters">
-          ⚙️ Settings
+        <button id="startBtn" class="btn-nav-start" title="Start Dialogue Debate">
+          START ▶
         </button>
-        <div class="specs-badge compact-specs">
-          <span class="spec-item"><span class="dot lime"></span> <span class="spec-label">Mem:</span> <span id="navMemVal">500c</span></span>
-          <span class="spec-item"><span class="dot sky"></span> <span class="spec-label">Cap:</span> <span id="navLimitVal">≤ 200c</span></span>
-          <span class="spec-item"><span class="dot white"></span> <span class="spec-label">Mode:</span> Sync</span>
-        </div>
+        <button id="stopBtn" class="btn-nav-stop" disabled title="Halt current match">
+          STOP
+        </button>
+        <button id="resetBtn" class="btn-nav-reset" title="Reset Arena">
+          ↺
+        </button>
+        <button id="settingsBtn" class="btn-settings-trigger" title="Arena Bot Configurations">
+          ⚙️
+        </button>
       </div>
     </header>
 
-    <!-- Compact Topic Control Bar -->
-    <section class="topic-bar compact-bar">
-      <div class="topic-main-row">
-        <div class="topic-input-wrapper">
+    <!-- Topic Setup Bar -->
+    <section class="setup-bar">
+      <div class="setup-main-row" style="grid-template-columns: 1fr;">
+        <div class="scenario-capsule" style="padding: 6px 16px;">
+          <span class="scenario-search-icon">⚔️</span>
           <input 
             type="text" 
             id="topicInput" 
+            class="scenario-capsule-input" 
             placeholder="Enter debate topic (e.g. Will AI ever experience genuine emotions?)..." 
-            maxlength="150"
+            maxlength="150" 
           />
-        </div>
-        <div class="action-buttons-group">
-          <button id="startBtn" class="btn btn-icon btn-start" title="Start Dialogue Arena">
-            <span>▶</span> Start
-          </button>
-          <button id="stopBtn" class="btn btn-icon btn-stop" disabled title="Stop the fight">
-            <span>⏹</span> Stop
-          </button>
-          <button id="resetBtn" class="btn btn-icon btn-reset" title="Reset Arena">
-            <span>↺</span>
-          </button>
         </div>
       </div>
 
-      <!-- Controls Sub-row: Limits + Quick Topics -->
-      <div class="arena-sub-row">
-        <div class="msg-limit-selector compact-selector">
-          <span class="control-label">Rounds:</span>
+      <!-- Presets & Rounds Sub-row -->
+      <div class="setup-sub-row">
+        <div class="presets-group">
+          <span class="presets-label">Topics:</span>
+          <button class="preset-pill topic-pill active" data-topic="Will AI replace human artists or empower them?">AI & Art</button>
+          <button class="preset-pill topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
+          <button class="preset-pill topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple Pizza</button>
+          <button class="preset-pill topic-pill" data-topic="Would you rather live 500 years in past or future?">Time Travel</button>
+        </div>
+
+        <div class="rounds-group">
+          <span class="rounds-label">Rounds:</span>
           <div class="pill-group" id="limitPillGroup">
             <button class="limit-pill" data-limit="5">5</button>
             <button class="limit-pill" data-limit="10">10</button>
             <button class="limit-pill" data-limit="15">15</button>
             <button class="limit-pill active" data-limit="20">20</button>
-            <input 
-              type="number" 
-              id="customLimitInput" 
-              min="1" 
-              max="20" 
-              placeholder="Custom" 
-              title="Custom rounds (1-20)"
-            />
           </div>
-        </div>
-
-        <div class="quick-topics compact-topics">
-          <span class="quick-label">Suggestions:</span>
-          <button class="topic-pill" data-topic="Will AI replace human artists or empower them?">AI & Art</button>
-          <button class="topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
-          <button class="topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple Pizza</button>
-          <button class="topic-pill" data-topic="Would you rather live 500 years in past or future?">Time Travel</button>
+          <input type="number" id="customLimitInput" class="custom-limit-input" min="1" max="20" placeholder="Custom" />
         </div>
       </div>
     </section>
 
-    <!-- Compact Live Scoreboard -->
-    <section class="scoreboard compact-scoreboard">
-      <!-- N Waths Card with Dropdown -->
-      <div class="bot-card-wrapper">
-        <div class="bot-card n-waths-card compact-card" id="nCard" role="button" tabindex="0" title="Click for model profile & telemetry">
-          <div class="bot-badge">
-            <span class="bot-avatar lime-avatar sm-avatar">N</span>
-            <div class="bot-info-col">
-              <div class="bot-name-row">
-                <span class="bot-name">N Waths</span>
-                <span class="dropdown-arrow">▾</span>
-              </div>
-              <span class="score-meta" id="nMsgs">0 / 20 msgs</span>
-            </div>
-          </div>
-          <div class="score-display">
-            <span class="score-val" id="nScore">0</span>
-            <span class="score-avg" id="nAvg">Avg 0.0</span>
-          </div>
-        </div>
-
-        <!-- N Waths Dropdown Menu -->
-        <div class="bot-dropdown-menu n-dropdown" id="nDropdown">
-          <div class="dropdown-header">
-            <h4>N Waths Profile</h4>
-            <span class="badge lime-tag">Active</span>
-          </div>
-          <div class="dropdown-body">
-            <div class="info-row"><span class="info-label">Provider</span><span class="info-val" id="nProviderVal">Loading...</span></div>
-            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono" id="nModelVal">Loading...</span></div>
-            <div class="divider"></div>
-            <div class="info-row"><span class="info-label">Arena Wins</span><span class="info-val highlight-lime" id="nWinsVal">0 wins (0%)</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono" id="nPromptTokVal">0</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono" id="nCompTokVal">0</span></div>
-            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span class="info-val font-mono highlight-lime" id="nTotalTokVal">0</span></div>
-          </div>
-        </div>
+    <!-- Match Status Capsule -->
+    <div class="status-strip-capsule">
+      <div class="status-strip-left">
+        <span class="status-highlight-ready" id="roundIndicator">READY</span>
+        <span class="status-sep">/</span>
+        <span class="status-strip-message" id="turnStatus">Enter a topic above and click Start</span>
       </div>
+      <div class="status-tie-chip" id="leaderChip">Tie (0 - 0)</div>
+    </div>
 
-      <!-- Center Status / Match Info -->
-      <div class="match-center compact-center">
-        <div class="center-top-row">
-          <span class="round-tracker" id="roundIndicator">Ready</span>
-          <span class="leader-chip" id="leaderChip">Tie (0 - 0)</span>
-        </div>
-        <div class="turn-status-banner" id="turnStatus">
-          Enter a topic and click Start
-        </div>
-      </div>
-
-      <!-- P Waths Card with Dropdown -->
-      <div class="bot-card-wrapper">
-        <div class="bot-card p-waths-card compact-card" id="pCard" role="button" tabindex="0" title="Click for model profile & telemetry">
-          <div class="bot-badge">
-            <span class="bot-avatar sky-avatar sm-avatar">P</span>
-            <div class="bot-info-col">
-              <div class="bot-name-row">
-                <span class="bot-name">P Waths</span>
-                <span class="dropdown-arrow">▾</span>
+    <!-- Main Workbench Area (Cards + Chat Viewport) -->
+    <main class="arena-stage-layout dialogue-layout">
+      <!-- Left Card: N Waths -->
+      <aside class="actor-stage-card n-stage-card" id="nCard">
+        <div>
+          <div class="card-orbit-header">
+            <div class="orbit-actor-identity">
+              <div class="cosmic-avatar-container n-cosmic-avatar">
+                <span>N</span>
+                <span class="cosmic-ring"></span>
               </div>
-              <span class="score-meta" id="pMsgs">0 / 20 msgs</span>
+              <div class="actor-meta-block">
+                <span class="actor-name-title">N Waths</span>
+                <span class="actor-persona-sub">NVIDIA NIM</span>
+              </div>
             </div>
+            <span class="msgs-count-pill" id="nMsgs">0 msgs</span>
           </div>
-          <div class="score-display">
-            <span class="score-val" id="pScore">0</span>
-            <span class="score-avg" id="pAvg">Avg 0.0</span>
-          </div>
-        </div>
 
-        <!-- P Waths Dropdown Menu -->
-        <div class="bot-dropdown-menu p-dropdown" id="pDropdown">
-          <div class="dropdown-header">
-            <h4>P Waths Profile</h4>
-            <span class="badge sky-tag">Active</span>
+          <div class="user-card-snippet">
+            <div class="mini-avatar">N</div>
+            <span class="snippet-text">N Waths Active Profile</span>
           </div>
-          <div class="dropdown-body">
-            <div class="info-row"><span class="info-label">Provider</span><span class="info-val" id="pProviderVal">Loading...</span></div>
-            <div class="info-row"><span class="info-label">Model</span><span class="info-val font-mono" id="pModelVal">Loading...</span></div>
-            <div class="divider"></div>
-            <div class="info-row"><span class="info-label">Arena Wins</span><span class="info-val highlight-sky" id="pWinsVal">0 wins (0%)</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Prompt)</span><span class="info-val font-mono" id="pPromptTokVal">0</span></div>
-            <div class="info-row"><span class="info-label">Tokens (Completion)</span><span class="info-val font-mono" id="pCompTokVal">0</span></div>
-            <div class="info-row total-row"><span class="info-label">Total Tokens</span><span class="info-val font-mono highlight-sky" id="pTotalTokVal">0</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Expanded Chat Stream Area -->
-    <main class="chat-viewport" id="chatViewport">
-      <div class="chat-feed" id="chatFeed">
-        <div class="welcome-banner compact-welcome">
-          <div class="docket-header">
-            <span class="docket-status-tag">EVALUATION DOCKET</span>
-            <span class="docket-id">BENCHMARK-RUN // IDLE</span>
-          </div>
-          <div class="docket-body">
-            <div class="docket-main">
-              <h3>Head-to-Head Dialogue Evaluation</h3>
-              <p>Two distinct LLM architectures run synchronous, turn-based dialogue under strict character and memory constraints. Rate every statement on logic, punchiness, and topic relevance.</p>
+          <!-- Vertical Arc Gauges Stack -->
+          <div class="gauges-vertical-stack">
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-gold" id="nScoreGauge" stroke-dasharray="60, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="nScore">0</span>
+              </div>
             </div>
-            <div class="docket-specs-grid">
-              <div class="spec-block">
-                <span class="spec-k">N ACTOR</span>
-                <span class="spec-v">NVIDIA NIM (Stepfun)</span>
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-gold" stroke-dasharray="30, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="nAvg">0.0</span>
               </div>
-              <div class="spec-block">
-                <span class="spec-k">P ACTOR</span>
-                <span class="spec-v">OpenRouter (Llama 3.2)</span>
-              </div>
-              <div class="spec-block">
-                <span class="spec-k">CHAR CAP</span>
-                <span class="spec-v">≤ 200 characters</span>
-              </div>
-              <div class="spec-block">
-                <span class="spec-k">MEMORY</span>
-                <span class="spec-v">500 char rolling session</span>
+            </div>
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-gold" stroke-dasharray="10, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="nMemGaugeVal">500</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+
+        <!-- Hidden Dropdown elements for script compatibility -->
+        <div style="display:none;" id="nDropdown">
+          <span id="nProviderVal">NVIDIA NIM</span>
+          <span id="nModelVal">stepfun-ai/step-5-preview</span>
+          <span id="nWinsVal">0 wins (0%)</span>
+          <span id="nPromptTokVal">0</span>
+          <span id="nCompTokVal">0</span>
+          <span id="nTotalTokVal">0</span>
+        </div>
+      </aside>
+
+      <!-- Center Chat Stream Area -->
+      <section class="center-chat-viewport" id="chatViewport">
+        <div class="chat-feed-stream" id="chatFeed">
+          <!-- Initial Welcome Feed State -->
+        </div>
+
+        <!-- Arched Bottom Docket Overlay -->
+        <div class="arched-docket-overlay" id="archedDocket">
+          <div class="docket-arch-title">Head-to-Head Dialogue Evaluation</div>
+          <div class="docket-specs-pill-row">
+            <div class="docket-spec-badge">
+              <span class="docket-badge-ring">N</span>
+              <span><strong>NVIDIA</strong> NIM (Stepfun)</span>
+            </div>
+            <div class="docket-spec-badge">
+              <span class="docket-badge-ring">P</span>
+              <span><strong>OpenRouter</strong> (Llama 3.2)</span>
+            </div>
+            <div class="docket-spec-badge">
+              <span class="docket-badge-ring">▤</span>
+              <span><strong>≤ 200</strong> char</span>
+            </div>
+            <div class="docket-spec-badge">
+              <span class="docket-badge-ring">🛡</span>
+              <span>500c <strong>rolling memory</strong></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Card: P Waths -->
+      <aside class="actor-stage-card p-stage-card" id="pCard">
+        <div>
+          <div class="card-orbit-header">
+            <div class="orbit-actor-identity">
+              <div class="cosmic-avatar-container p-cosmic-avatar">
+                <span>P</span>
+                <span class="cosmic-ring"></span>
+              </div>
+              <div class="actor-meta-block">
+                <span class="actor-name-title">P Waths</span>
+                <span class="actor-persona-sub">OpenRouter</span>
+              </div>
+            </div>
+            <span class="msgs-count-pill" id="pMsgs">0 msgs</span>
+          </div>
+
+          <!-- Vertical Arc Gauges Stack -->
+          <div class="gauges-vertical-stack">
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-silver" id="pScoreGauge" stroke-dasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="pScore">0</span>
+              </div>
+            </div>
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-silver" stroke-dasharray="30, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="pAvg">0.0</span>
+              </div>
+            </div>
+            <div class="gauge-row-item">
+              <div class="gauge-circle-outer">
+                <svg viewBox="0 0 36 36" class="gauge-svg">
+                  <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="gauge-progress-silver" stroke-dasharray="10, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="gauge-center-text" id="pMemGaugeVal">500</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden Dropdown elements for script compatibility -->
+        <div style="display:none;" id="pDropdown">
+          <span id="pProviderVal">OpenRouter</span>
+          <span id="pModelVal">meta-llama/llama-3.2-3b-instruct</span>
+          <span id="pWinsVal">0 wins (0%)</span>
+          <span id="pPromptTokVal">0</span>
+          <span id="pCompTokVal">0</span>
+          <span id="pTotalTokVal">0</span>
+        </div>
+      </aside>
     </main>
 
-    <!-- Bottom Action Ribbon -->
-    <footer class="action-ribbon compact-ribbon" id="actionRibbon">
-      <div class="ribbon-status" id="ribbonStatus">
-        Awaiting topic to begin simulation...
-      </div>
-      <div class="ribbon-controls">
+    <!-- Bottom Controls Ribbon -->
+    <footer class="bottom-ribbon" id="actionRibbon">
+      <span class="ribbon-pill-tag">Dialogue Docket</span>
+      <div class="ribbon-status" id="ribbonStatus" style="display:none;">Ready</div>
+      <div class="ribbon-right-controls">
         <label class="toggle-container">
           <input type="checkbox" id="autoAdvanceToggle" checked>
-          <span class="toggle-slider"></span>
-          <span class="toggle-label">Auto-trigger next turn after scoring</span>
+          <span>Auto-trigger next turn...</span>
         </label>
-        <button id="nextTurnBtn" class="btn btn-next" disabled>
+        <button id="nextTurnBtn" class="btn-next-pill" disabled>
           Next Turn ➔
         </button>
       </div>
     </footer>
   </div>
 
-  <!-- Settings Modal -->
+  <!-- Settings Modal (Matching Image 2) -->
   <div class="modal-overlay" id="settingsModal" style="display: none;">
     <div class="settings-modal-card">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <span class="modal-icon">⚙️</span>
-          <h3>Arena Bot Configurations</h3>
+      <div class="settings-modal-header">
+        <div class="settings-modal-title">
+          <span>⚙</span> ARENA BOT CONFIGURATIONS
         </div>
         <button class="modal-close-btn" id="closeSettingsBtn" title="Close Settings">✕</button>
       </div>
 
-      <div class="modal-body">
-        <div class="settings-grid">
-          <!-- N Waths (NVIDIA NIM) Settings Column -->
-          <div class="settings-col n-settings-col">
-            <div class="col-header">
-              <span class="bot-indicator lime-indicator"></span>
-              <h4>N Waths (NVIDIA NIM)</h4>
+      <div class="settings-modal-body">
+        <div class="settings-duo-columns">
+          <!-- N Waths Column -->
+          <div class="settings-bot-column n-col">
+            <div class="col-brand-header">
+              <div class="cosmic-avatar-container n-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
+                <span>N</span>
+                <span class="cosmic-ring"></span>
+              </div>
+              <div>
+                <h4>WATHS <span class="provider-tag">(NVIDIA NIM)</span></h4>
+              </div>
             </div>
 
-            <!-- Model -->
-            <div class="setting-group">
-              <label for="nModelSelect">Model Selection</label>
-              <select id="nModelSelect" class="form-select">
+            <div class="slider-group-container">
+              <div class="slider-label">Model Selection</div>
+              <select id="nModelSelect" class="form-select-dark">
                 <option value="stepfun-ai/step-5-preview">stepfun-ai/step-5-preview (Default)</option>
                 <option value="minimaxai/minimax-m3.1-flash">minimaxai/minimax-m3.1-flash (Fast & High Fidelity)</option>
                 <option value="moonshotai/kimi-k3.1-pro">moonshotai/kimi-k3.1-pro</option>
                 <option value="z-ai/glm-5.3-flash">z-ai/glm-5.3-flash</option>
                 <option value="custom">Custom Model ID...</option>
               </select>
-              <input type="text" id="nCustomModelInput" class="form-input custom-model-input" placeholder="Enter custom NVIDIA model ID" style="display: none;" />
+              <input type="text" id="nCustomModelInput" class="custom-limit-input" style="display:none;width:100%;margin-top:4px;" placeholder="Custom Model ID" />
             </div>
 
-            <!-- Temperature -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="nTempRange">Temperature</label>
-                <span class="val-display" id="nTempVal">0.70</span>
-              </div>
-              <input type="range" id="nTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
-              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
-            </div>
-
-            <!-- Context Memory -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="nMemRange">Context Memory Limit</label>
-                <span class="val-display" id="nMemVal">500 chars</span>
-              </div>
-              <input type="range" id="nMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
-              <span class="setting-help">Max characters kept from current session history</span>
-            </div>
-
-            <!-- Output Message Limit -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="nLimitRange">Output Character Limit</label>
-                <span class="val-display" id="nLimitVal">200 chars</span>
-              </div>
-              <input type="range" id="nLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
-              <span class="setting-help">Strict character ceiling per bot response</span>
-            </div>
-
-            <!-- Other Important Model Settings -->
-            <div class="advanced-divider"><span>Advanced Parameters</span></div>
-
-            <div class="setting-row-duo">
-              <div class="setting-group-half">
-                <div class="label-row">
-                  <label for="nTopPRange">Top-P</label>
-                  <span class="val-display" id="nTopPVal">0.90</span>
+            <div class="slider-group-container">
+              <div class="slider-label">Temperature</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="nTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-gold" id="nTempGaugeSvg" stroke-dasharray="47, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="nTempVal">0.70</span>
                 </div>
-                <input type="range" id="nTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
               </div>
+            </div>
 
-              <div class="setting-group-half">
-                <div class="label-row">
-                  <label for="nMaxTokensInput">Max Tokens</label>
+            <div class="slider-group-container">
+              <div class="slider-label">Context Memory Limit</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="nMemRange" min="100" max="2000" step="50" value="500" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-gold" id="nMemGaugeSvg" stroke-dasharray="25, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="nMemVal">500</span>
                 </div>
-                <input type="number" id="nMaxTokensInput" min="50" max="800" value="450" class="form-input num-input" />
+              </div>
+            </div>
+
+            <div class="slider-group-container">
+              <div class="slider-label">Output Character Limit</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="nLimitRange" min="50" max="1000" step="10" value="200" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-gold" id="nLimitGaugeSvg" stroke-dasharray="20, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="nLimitVal" style="font-size:9px;">200c</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stepper-row">
+              <span class="stepper-label">Top-P</span>
+              <div class="stepper-capsule">
+                <button type="button" class="stepper-btn" id="nTopPDec">–</button>
+                <span class="stepper-val" id="nTopPVal">0.90</span>
+                <button type="button" class="stepper-btn" id="nTopPInc">+</button>
+                <input type="range" id="nTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" style="display:none;" />
+              </div>
+            </div>
+
+            <div class="stepper-row">
+              <span class="stepper-label">Max Tokens</span>
+              <div class="stepper-capsule">
+                <button type="button" class="stepper-btn" id="nTokensDec">–</button>
+                <span class="stepper-val" id="nTokensVal">450</span>
+                <button type="button" class="stepper-btn" id="nTokensInc">+</button>
+                <input type="number" id="nMaxTokensInput" min="50" max="800" value="450" style="display:none;" />
               </div>
             </div>
           </div>
 
-          <!-- P Waths (OpenRouter) Settings Column -->
-          <div class="settings-col p-settings-col">
-            <div class="col-header">
-              <span class="bot-indicator sky-indicator"></span>
-              <h4>P Waths (OpenRouter)</h4>
+          <!-- P Waths Column -->
+          <div class="settings-bot-column p-col">
+            <div class="col-brand-header">
+              <div class="cosmic-avatar-container p-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
+                <span>P</span>
+                <span class="cosmic-ring"></span>
+              </div>
+              <div>
+                <h4>WATHS <span class="provider-tag">(OpenRouter)</span></h4>
+              </div>
             </div>
 
-            <!-- Model -->
-            <div class="setting-group">
-              <label for="pModelSelect">Model Selection</label>
-              <select id="pModelSelect" class="form-select">
+            <div class="slider-group-container">
+              <div class="slider-label">Model Selection</div>
+              <select id="pModelSelect" class="form-select-dark">
                 <option value="meta-llama/llama-3.2-3b-instruct">meta-llama/llama-3.2-3b-instruct (Default)</option>
                 <option value="google/gemini-2.0-flash-001">google/gemini-2.0-flash-001</option>
                 <option value="anthropic/claude-3.5-haiku">anthropic/claude-3.5-haiku</option>
                 <option value="deepseek/deepseek-chat">deepseek/deepseek-chat</option>
                 <option value="custom">Custom Model ID...</option>
               </select>
-              <input type="text" id="pCustomModelInput" class="form-input custom-model-input" placeholder="Enter custom OpenRouter model ID" style="display: none;" />
+              <input type="text" id="pCustomModelInput" class="custom-limit-input" style="display:none;width:100%;margin-top:4px;" placeholder="Custom Model ID" />
             </div>
 
-            <!-- Temperature -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="pTempRange">Temperature</label>
-                <span class="val-display" id="pTempVal">0.70</span>
-              </div>
-              <input type="range" id="pTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range" />
-              <span class="setting-help">Lower = precise; Higher = creative & unpredictable</span>
-            </div>
-
-            <!-- Context Memory -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="pMemRange">Context Memory Limit</label>
-                <span class="val-display" id="pMemVal">500 chars</span>
-              </div>
-              <input type="range" id="pMemRange" min="100" max="2000" step="50" value="500" class="form-range" />
-              <span class="setting-help">Max characters kept from current session history</span>
-            </div>
-
-            <!-- Output Message Limit -->
-            <div class="setting-group">
-              <div class="label-row">
-                <label for="pLimitRange">Output Character Limit</label>
-                <span class="val-display" id="pLimitVal">200 chars</span>
-              </div>
-              <input type="range" id="pLimitRange" min="50" max="500" step="10" value="200" class="form-range" />
-              <span class="setting-help">Strict character ceiling per bot response</span>
-            </div>
-
-            <!-- Other Important Model Settings -->
-            <div class="advanced-divider"><span>Advanced Parameters</span></div>
-
-            <div class="setting-row-duo">
-              <div class="setting-group-half">
-                <div class="label-row">
-                  <label for="pTopPRange">Top-P</label>
-                  <span class="val-display" id="pTopPVal">0.90</span>
+            <div class="slider-group-container">
+              <div class="slider-label">Temperature</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="pTempRange" min="0.0" max="1.5" step="0.05" value="0.7" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-silver" id="pTempGaugeSvg" stroke-dasharray="47, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="pTempVal">0.70</span>
                 </div>
-                <input type="range" id="pTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" class="form-range" />
               </div>
+            </div>
 
-              <div class="setting-group-half">
-                <div class="label-row">
-                  <label for="pMaxTokensInput">Max Tokens</label>
+            <div class="slider-group-container">
+              <div class="slider-label">Context Memory Limit</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="pMemRange" min="100" max="2000" step="50" value="500" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-silver" id="pMemGaugeSvg" stroke-dasharray="25, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="pMemVal">500</span>
                 </div>
-                <input type="number" id="pMaxTokensInput" min="50" max="800" value="200" class="form-input num-input" />
+              </div>
+            </div>
+
+            <div class="slider-group-container">
+              <div class="slider-label">Output Character Limit</div>
+              <div class="slider-with-gauge">
+                <input type="range" id="pLimitRange" min="50" max="1000" step="10" value="200" class="form-range-gold" />
+                <div class="gauge-circle-outer">
+                  <svg viewBox="0 0 36 36" class="gauge-svg">
+                    <path class="gauge-track" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="gauge-progress-silver" id="pLimitGaugeSvg" stroke-dasharray="20, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <span class="gauge-center-text" id="pLimitVal" style="font-size:9px;">200c</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stepper-row">
+              <span class="stepper-label">Top-P</span>
+              <div class="stepper-capsule">
+                <button type="button" class="stepper-btn" id="pTopPDec">–</button>
+                <span class="stepper-val" id="pTopPVal">0.90</span>
+                <button type="button" class="stepper-btn" id="pTopPInc">+</button>
+                <input type="range" id="pTopPRange" min="0.1" max="1.0" step="0.05" value="0.9" style="display:none;" />
+              </div>
+            </div>
+
+            <div class="stepper-row">
+              <span class="stepper-label">Max Tokens</span>
+              <div class="stepper-capsule">
+                <button type="button" class="stepper-btn" id="pTokensDec">–</button>
+                <span class="stepper-val" id="pTokensVal">200</span>
+                <button type="button" class="stepper-btn" id="pTokensInc">+</button>
+                <input type="number" id="pMaxTokensInput" min="50" max="800" value="200" style="display:none;" />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button id="resetSettingsBtn" class="btn btn-secondary">Reset to Defaults</button>
-        <div class="footer-right">
-          <button id="cancelSettingsBtn" class="btn btn-ghost">Cancel</button>
-          <button id="saveSettingsBtn" class="btn btn-primary">Save & Apply</button>
-        </div>
+      <div class="settings-modal-footer">
+        <button id="resetSettingsBtn" class="btn-modal-reset">RESET TO DEFAULTS</button>
+        <button id="saveSettingsBtn" class="btn-modal-save">SAVE & APPLY</button>
+        <button id="cancelSettingsBtn" style="display:none;">Cancel</button>
       </div>
     </div>
   </div>
 
-  <script src="settings.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <span id="navMemVal" style="display:none;">500c</span>
+  <span id="navLimitVal" style="display:none;">≤ 200c</span>
+
+  <script src="settings.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
+
 </html>

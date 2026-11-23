@@ -182,22 +182,47 @@ pDropdown.addEventListener("click", (e) => e.stopPropagation());
 // Briefing drawer toggle button
 if (toggleBriefingBtn) {
   toggleBriefingBtn.addEventListener("click", () => {
-    if (masterContent && (masterContent.style.display === "block" || masterContent.style.display === "flex")) {
-      masterContent.style.display = "none";
-      setText(toggleBriefingBtn, "Roles ▾");
+    const pill = document.getElementById("masterSwitchPill");
+    if (masterContent && masterContent.classList.contains("open")) {
+      masterContent.classList.remove("open");
+      if (pill) pill.classList.remove("active");
     } else if (masterContent) {
-      masterContent.style.display = "block";
-      setText(toggleBriefingBtn, "Close ▴");
+      masterContent.classList.add("open");
+      if (pill) pill.classList.add("active");
     }
+  });
+}
+
+const nRoleBtn = document.getElementById("nRoleContextBtn");
+const pRoleBtn = document.getElementById("pRoleContextBtn");
+const openDrawer = () => {
+  if (masterContent) masterContent.classList.add("open");
+  const pill = document.getElementById("masterSwitchPill");
+  if (pill) pill.classList.add("active");
+};
+if (nRoleBtn) nRoleBtn.addEventListener("click", openDrawer);
+if (pRoleBtn) pRoleBtn.addEventListener("click", openDrawer);
+
+const clearScenarioBtn = document.getElementById("clearScenarioBtn");
+if (clearScenarioBtn && scenarioInput) {
+  scenarioInput.addEventListener("input", () => {
+    clearScenarioBtn.style.display = scenarioInput.value ? "inline-block" : "none";
+  });
+  clearScenarioBtn.addEventListener("click", () => {
+    scenarioInput.value = "";
+    clearScenarioBtn.style.display = "none";
   });
 }
 
 // Preset Pills
 presetPills.forEach(pill => {
   pill.addEventListener("click", () => {
+    presetPills.forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
     nCharInput.value = pill.getAttribute("data-n");
     pCharInput.value = pill.getAttribute("data-p");
     scenarioInput.value = pill.getAttribute("data-scenario");
+    if (clearScenarioBtn) clearScenarioBtn.style.display = "inline-block";
   });
 });
 
@@ -262,6 +287,19 @@ function updateScoreboard() {
   } else {
     setText(leaderChip, `Tie (${STATE.nScoreTotal} - ${STATE.pScoreTotal})`);
     if (leaderChip) leaderChip.style.color = "var(--text-muted)";
+  }
+
+  // Dynamic Arc Gauges update
+  const nScoreGauge = document.getElementById("nScoreGauge");
+  const pScoreGauge = document.getElementById("pScoreGauge");
+  const maxPossible = Math.max(1, (STATE.maxRounds || 20) * 10);
+  if (nScoreGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((STATE.nScoreTotal / maxPossible) * 100)));
+    nScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
+  }
+  if (pScoreGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((STATE.pScoreTotal / maxPossible) * 100)));
+    pScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
   }
 
   // Active turn glow

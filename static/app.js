@@ -232,6 +232,19 @@ function updateScoreboard() {
     leaderChip.style.color = "var(--text-muted)";
   }
 
+  // Dynamic Arc Gauges update
+  const nScoreGauge = document.getElementById("nScoreGauge");
+  const pScoreGauge = document.getElementById("pScoreGauge");
+  const maxPossible = Math.max(1, (STATE.maxRounds || 20) * 10);
+  if (nScoreGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((STATE.nScoreTotal / maxPossible) * 100)));
+    nScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
+  }
+  if (pScoreGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((STATE.pScoreTotal / maxPossible) * 100)));
+    pScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
+  }
+
   // Active turn glow
   if (STATE.currentTurn === "N Waths") {
     nCard.classList.add("active-turn");
