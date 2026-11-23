@@ -67,10 +67,18 @@ def call_nvidia(topic, last_message, memory_context):
             # Hard limit 200 characters
             if len(content) > 200:
                 content = content[:197] + "..."
-            return {"text": content, "raw_length": len(content)}
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"NVIDIA API Error {e.code}: {error_body}"}
+            usage = data.get("usage", {})
+            return {
+                "text": content,
+                "raw_length": len(content),
+                "model": NVIDIA_MODEL,
+                "provider": "NVIDIA NIM",
+                "tokens": {
+                    "prompt": usage.get("prompt_tokens", 0),
+                    "completion": usage.get("completion_tokens", 0),
+                    "total": usage.get("total_tokens", 0)
+                }
+            }
     except Exception as e:
         return {"error": f"NVIDIA Connection Error: {str(e)}"}
 
@@ -122,7 +130,18 @@ def call_openrouter(topic, last_message, memory_context):
             content = content.strip().strip('"')
             if len(content) > 200:
                 content = content[:197] + "..."
-            return {"text": content, "raw_length": len(content)}
+            usage = data.get("usage", {})
+            return {
+                "text": content,
+                "raw_length": len(content),
+                "model": OPENROUTER_MODEL,
+                "provider": "OpenRouter",
+                "tokens": {
+                    "prompt": usage.get("prompt_tokens", 0),
+                    "completion": usage.get("completion_tokens", 0),
+                    "total": usage.get("total_tokens", 0)
+                }
+            }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="ignore")
         return {"error": f"OpenRouter API Error {e.code}: {error_body}"}
@@ -136,6 +155,23 @@ def index():
 @app.route("/<path:path>")
 def static_files(path):
     return send_from_directory("static", path)
+
+@app.route("/api/bot-info", methods=["GET"])
+def bot_info():
+    return jsonify({
+        "N Waths": {
+            "name": "N Waths",
+            "model": NVIDIA_MODEL,
+            "provider": "NVIDIA NIM",
+            "has_key": bool(NVIDIA_API_KEY)
+        },
+        "P Waths": {
+            "name": "P Waths",
+            "model": OPENROUTER_MODEL,
+            "provider": "OpenRouter",
+            "has_key": bool(OPENROUTER_API_KEY)
+        }
+    })
 
 @app.route("/api/bot-turn", methods=["POST"])
 def bot_turn():
