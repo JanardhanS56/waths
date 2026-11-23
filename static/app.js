@@ -21,7 +21,7 @@ const STATE = {
 
   // Bot metadata from backend
   botInfo: {
-    "N Waths": { model: "minimaxai/minimax-m3.1-flash", provider: "NVIDIA NIM" },
+    "N Waths": { model: "stepfun-ai/step-5-preview", provider: "NVIDIA NIM" },
     "P Waths": { model: "meta-llama/llama-3.2-3b-instruct", provider: "OpenRouter" }
   }
 };
@@ -112,20 +112,27 @@ function updateDropdownTelemetry() {
 
   const setSafe = (el, val) => { if (el) el.textContent = val; };
 
+  const nModel = window.WathsSettings ? window.WathsSettings.getBotConfig("N Waths").model : (STATE.botInfo["N Waths"]?.model || "stepfun-ai/step-5-preview");
+  const pModel = window.WathsSettings ? window.WathsSettings.getBotConfig("P Waths").model : (STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
+
   setSafe(nProviderVal, STATE.botInfo["N Waths"]?.provider || "NVIDIA NIM");
-  setSafe(nModelVal, STATE.botInfo["N Waths"]?.model || "minimaxai/minimax-m3.1-flash");
+  setSafe(nModelVal, nModel);
   setSafe(nWinsVal, `${stats.nWins} wins (${nRate}%)`);
   setSafe(nPromptTokVal, STATE.nTokens.prompt.toLocaleString());
   setSafe(nCompTokVal, STATE.nTokens.completion.toLocaleString());
   setSafe(nTotalTokVal, STATE.nTokens.total.toLocaleString());
 
   setSafe(pProviderVal, STATE.botInfo["P Waths"]?.provider || "OpenRouter");
-  setSafe(pModelVal, STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
+  setSafe(pModelVal, pModel);
   setSafe(pWinsVal, `${stats.pWins} wins (${pRate}%)`);
   setSafe(pPromptTokVal, STATE.pTokens.prompt.toLocaleString());
   setSafe(pCompTokVal, STATE.pTokens.completion.toLocaleString());
   setSafe(pTotalTokVal, STATE.pTokens.total.toLocaleString());
 }
+
+window.addEventListener("waths-settings-updated", () => {
+  updateDropdownTelemetry();
+});
 
 // Dropdown toggle listeners
 nCard.addEventListener("click", (e) => {
@@ -481,6 +488,10 @@ async function executeNextTurn() {
   chatFeed.appendChild(typingRow);
   chatViewport.scrollTop = chatViewport.scrollHeight;
 
+  const botConfig = window.WathsSettings ? window.WathsSettings.getBotConfig(bot) : {};
+  const memoryLimit = botConfig.memory_limit || 500;
+  const maxChars = botConfig.max_chars || 200;
+
   try {
     const res = await fetch("/api/bot-turn", {
       method: "POST",
@@ -489,7 +500,8 @@ async function executeNextTurn() {
         bot: bot,
         topic: STATE.topic,
         last_message: STATE.lastMessage,
-        memory: STATE.sessionMemory
+        memory: STATE.sessionMemory,
+        config: botConfig
       })
     });
 
@@ -516,10 +528,10 @@ async function executeNextTurn() {
     const messageText = data.text || "(No response)";
     STATE.lastMessage = messageText;
 
-    // Append to in-session context memory (max 500 chars)
+    // Append to in-session context memory (dynamic limit)
     STATE.sessionMemory += `${bot}: ${messageText}\n`;
-    if (STATE.sessionMemory.length > 500) {
-      STATE.sessionMemory = STATE.sessionMemory.slice(-500);
+    if (STATE.sessionMemory.length > memoryLimit) {
+      STATE.sessionMemory = STATE.sessionMemory.slice(-memoryLimit);
     }
 
     if (isN) {
@@ -528,7 +540,7 @@ async function executeNextTurn() {
       STATE.pMsgsCount++;
     }
 
-    renderBotMessage(bot, messageText);
+    renderBotMessage(bot, messageText, maxChars);
 
   } catch (err) {
     typingRow.remove();
@@ -539,13 +551,13 @@ async function executeNextTurn() {
   }
 }
 
-function renderBotMessage(bot, text) {
+function renderBotMessage(bot, text, maxChars = 200) {
   const isN = bot === "N Waths";
   const row = document.createElement("div");
   row.className = `msg-row ${isN ? "n-row" : "p-row"}`;
 
   const charCount = text.length;
-  const isWarning = charCount >= 195;
+  const isWarning = charCount >= (maxChars - 5);
 
   const bubble = document.createElement("div");
   bubble.className = `msg-bubble ${isN ? "n-bubble" : "p-bubble"}`;
@@ -556,7 +568,7 @@ function renderBotMessage(bot, text) {
         ${isN ? '🟢' : '🔵'} ${bot}
       </span>
       <span class="char-badge ${isWarning ? 'warning' : ''}">
-        ${charCount}/200 chars
+        ${charCount}/${maxChars} chars
       </span>
     </div>
     <div class="msg-text">${escapeHtml(text)}</div>

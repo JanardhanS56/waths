@@ -25,7 +25,7 @@ const STATE = {
 
   // Bot metadata
   botInfo: {
-    "N Waths": { model: "minimaxai/minimax-m3.1-flash", provider: "NVIDIA NIM" },
+    "N Waths": { model: "stepfun-ai/step-5-preview", provider: "NVIDIA NIM" },
     "P Waths": { model: "meta-llama/llama-3.2-3b-instruct", provider: "OpenRouter" },
     "Arena Master": { model: "openai/gpt-oss-120b", provider: "Groq" }
   }
@@ -137,20 +137,27 @@ function updateDropdownTelemetry() {
 
   const setSafe = (el, val) => { if (el) el.textContent = val; };
 
+  const nModel = window.WathsSettings ? window.WathsSettings.getBotConfig("N Waths").model : (STATE.botInfo["N Waths"]?.model || "stepfun-ai/step-5-preview");
+  const pModel = window.WathsSettings ? window.WathsSettings.getBotConfig("P Waths").model : (STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
+
   setSafe(nProviderVal, STATE.botInfo["N Waths"]?.provider || "NVIDIA NIM");
-  setSafe(nModelVal, STATE.botInfo["N Waths"]?.model || "minimaxai/minimax-m3.1-flash");
+  setSafe(nModelVal, nModel);
   setSafe(nWinsVal, `${stats.nWins} wins (${nRate}%)`);
   setSafe(nPromptTokVal, STATE.nTokens.prompt.toLocaleString());
   setSafe(nCompTokVal, STATE.nTokens.completion.toLocaleString());
   setSafe(nTotalTokVal, STATE.nTokens.total.toLocaleString());
 
   setSafe(pProviderVal, STATE.botInfo["P Waths"]?.provider || "OpenRouter");
-  setSafe(pModelVal, STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
+  setSafe(pModelVal, pModel);
   setSafe(pWinsVal, `${stats.pWins} wins (${pRate}%)`);
   setSafe(pPromptTokVal, STATE.pTokens.prompt.toLocaleString());
   setSafe(pCompTokVal, STATE.pTokens.completion.toLocaleString());
   setSafe(pTotalTokVal, STATE.pTokens.total.toLocaleString());
 }
+
+window.addEventListener("waths-settings-updated", () => {
+  updateDropdownTelemetry();
+});
 
 // Dropdown interactions
 nCard.addEventListener("click", (e) => {
@@ -580,6 +587,10 @@ async function executeNextTurn() {
   chatFeed.appendChild(typingRow);
   chatViewport.scrollTop = chatViewport.scrollHeight;
 
+  const botConfig = window.WathsSettings ? window.WathsSettings.getBotConfig(bot) : {};
+  const memoryLimit = botConfig.memory_limit || 500;
+  const maxChars = botConfig.max_chars || 200;
+
   try {
     const res = await fetch("/api/bot-turn", {
       method: "POST",
@@ -594,7 +605,8 @@ async function executeNextTurn() {
           role_context: roleContext,
           scenario: STATE.briefing?.scenario_summary,
           opp_char: oppChar
-        }
+        },
+        config: botConfig
       })
     });
 
@@ -620,10 +632,10 @@ async function executeNextTurn() {
     const messageText = data.text || "(In-character silence)";
     STATE.lastMessage = messageText;
 
-    // Append to in-session context memory (max 500 chars)
+    // Append to in-session context memory (dynamic limit)
     STATE.sessionMemory += `${activeChar}: ${messageText}\n`;
-    if (STATE.sessionMemory.length > 500) {
-      STATE.sessionMemory = STATE.sessionMemory.slice(-500);
+    if (STATE.sessionMemory.length > memoryLimit) {
+      STATE.sessionMemory = STATE.sessionMemory.slice(-memoryLimit);
     }
 
     if (isN) {
@@ -632,7 +644,7 @@ async function executeNextTurn() {
       STATE.pMsgsCount++;
     }
 
-    renderRoleplayMessage(bot, activeChar, messageText);
+    renderRoleplayMessage(bot, activeChar, messageText, maxChars);
 
   } catch (err) {
     typingRow.remove();
@@ -643,13 +655,13 @@ async function executeNextTurn() {
   }
 }
 
-function renderRoleplayMessage(bot, charName, text) {
+function renderRoleplayMessage(bot, charName, text, maxChars = 200) {
   const isN = bot === "N Waths";
   const row = document.createElement("div");
   row.className = `msg-row ${isN ? "n-row" : "p-row"}`;
 
   const charCount = text.length;
-  const isWarning = charCount >= 195;
+  const isWarning = charCount >= (maxChars - 5);
 
   const bubble = document.createElement("div");
   bubble.className = `msg-bubble ${isN ? "n-bubble" : "p-bubble"}`;
@@ -660,7 +672,7 @@ function renderRoleplayMessage(bot, charName, text) {
         ${isN ? '🟢' : '🔵'} ${charName} <span class="actor-tag">(${bot})</span>
       </span>
       <span class="char-badge ${isWarning ? 'warning' : ''}">
-        ${charCount}/200 chars
+        ${charCount}/${maxChars} chars
       </span>
     </div>
     <div class="msg-text">${escapeHtml(text)}</div>
