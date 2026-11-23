@@ -3,7 +3,7 @@
 const STATE = {
   topic: "",
   round: 0,
-  maxRounds: 20, // max 20 messages per bot
+  maxRounds: 20, // default 20 messages per bot, configurable up to 20
   nScoreTotal: 0,
   pScoreTotal: 0,
   nMsgsCount: 0,
@@ -13,11 +13,44 @@ const STATE = {
   activeAwaitingScore: false,
   isSimulating: false,
   isFinished: false,
+
+  // Token usage tracking
+  nTokens: { prompt: 0, completion: 0, total: 0 },
+  pTokens: { prompt: 0, completion: 0, total: 0 },
+
+  // Bot metadata from backend
+  botInfo: {
+    "N Waths": { model: "minimaxai/minimax-m3.1-flash", provider: "NVIDIA NIM" },
+    "P Waths": { model: "meta-llama/llama-3.2-3b-instruct", provider: "OpenRouter" }
+  }
 };
+
+// LocalStorage Win Stats
+function getStoredStats() {
+  try {
+    const raw = localStorage.getItem("waths_arena_stats");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { nWins: 0, pWins: 0, ties: 0, totalMatches: 0 };
+}
+
+function saveWinStat(winner) {
+  const stats = getStoredStats();
+  stats.totalMatches++;
+  if (winner === "N Waths") stats.nWins++;
+  else if (winner === "P Waths") stats.pWins++;
+  else stats.ties++;
+
+  try {
+    localStorage.setItem("waths_arena_stats", JSON.stringify(stats));
+  } catch (e) {}
+  updateDropdownTelemetry();
+}
 
 // DOM Elements
 const topicInput = document.getElementById("topicInput");
 const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
 const resetBtn = document.getElementById("resetBtn");
 const chatFeed = document.getElementById("chatFeed");
 const chatViewport = document.getElementById("chatViewport");
@@ -29,6 +62,8 @@ const nMsgsEl = document.getElementById("nMsgs");
 const pMsgsEl = document.getElementById("pMsgs");
 const nCard = document.getElementById("nCard");
 const pCard = document.getElementById("pCard");
+const nDropdown = document.getElementById("nDropdown");
+const pDropdown = document.getElementById("pDropdown");
 const roundIndicator = document.getElementById("roundIndicator");
 const turnStatus = document.getElementById("turnStatus");
 const leaderChip = document.getElementById("leaderChip");
@@ -36,8 +71,83 @@ const ribbonStatus = document.getElementById("ribbonStatus");
 const nextTurnBtn = document.getElementById("nextTurnBtn");
 const autoAdvanceToggle = document.getElementById("autoAdvanceToggle");
 const quickTopicPills = document.querySelectorAll(".topic-pill");
+const limitPills = document.querySelectorAll(".limit-pill");
+const customLimitInput = document.getElementById("customLimitInput");
 
-// Event Listeners
+// Telemetry Elements
+const nProviderVal = document.getElementById("nProviderVal");
+const nModelVal = document.getElementById("nModelVal");
+const nWinsVal = document.getElementById("nWinsVal");
+const nPromptTokVal = document.getElementById("nPromptTokVal");
+const nCompTokVal = document.getElementById("nCompTokVal");
+const nTotalTokVal = document.getElementById("nTotalTokVal");
+
+const pProviderVal = document.getElementById("pProviderVal");
+const pModelVal = document.getElementById("pModelVal");
+const pWinsVal = document.getElementById("pWinsVal");
+const pPromptTokVal = document.getElementById("pPromptTokVal");
+const pCompTokVal = document.getElementById("pCompTokVal");
+const pTotalTokVal = document.getElementById("pTotalTokVal");
+
+// Initialize Bot Info from Backend
+async function fetchBotInfo() {
+  try {
+    const res = await fetch("/api/bot-info");
+    if (res.ok) {
+      const data = await res.json();
+      if (data["N Waths"]) STATE.botInfo["N Waths"] = data["N Waths"];
+      if (data["P Waths"]) STATE.botInfo["P Waths"] = data["P Waths"];
+    }
+  } catch (e) {}
+  updateDropdownTelemetry();
+}
+
+// Update telemetry in dropdown menus
+function updateDropdownTelemetry() {
+  const stats = getStoredStats();
+  const total = stats.totalMatches || 0;
+  const nRate = total > 0 ? Math.round((stats.nWins / total) * 100) : 0;
+  const pRate = total > 0 ? Math.round((stats.pWins / total) * 100) : 0;
+
+  // N Waths Dropdown
+  nProviderVal.textContent = STATE.botInfo["N Waths"].provider;
+  nModelVal.textContent = STATE.botInfo["N Waths"].model;
+  nWinsVal.textContent = `${stats.nWins} wins (${nRate}%)`;
+  nPromptTokVal.textContent = STATE.nTokens.prompt.toLocaleString();
+  nCompTokVal.textContent = STATE.nTokens.completion.toLocaleString();
+  nTotalTokVal.textContent = STATE.nTokens.total.toLocaleString();
+
+  // P Waths Dropdown
+  pProviderVal.textContent = STATE.botInfo["P Waths"].provider;
+  pModelVal.textContent = STATE.botInfo["P Waths"].model;
+  pWinsVal.textContent = `${stats.pWins} wins (${pRate}%)`;
+  pPromptTokVal.textContent = STATE.pTokens.prompt.toLocaleString();
+  pCompTokVal.textContent = STATE.pTokens.completion.toLocaleString();
+  pTotalTokVal.textContent = STATE.pTokens.total.toLocaleString();
+}
+
+// Dropdown toggle listeners
+nCard.addEventListener("click", (e) => {
+  e.stopPropagation();
+  nDropdown.classList.toggle("show");
+  pDropdown.classList.remove("show");
+});
+
+pCard.addEventListener("click", (e) => {
+  e.stopPropagation();
+  pDropdown.classList.toggle("show");
+  nDropdown.classList.remove("show");
+});
+
+// Close dropdown on outside click
+document.addEventListener("click", () => {
+  nDropdown.classList.remove("show");
+  pDropdown.classList.remove("show");
+});
+nDropdown.addEventListener("click", (e) => e.stopPropagation());
+pDropdown.addEventListener("click", (e) => e.stopPropagation());
+
+// Topic Quick Pills
 quickTopicPills.forEach(pill => {
   pill.addEventListener("click", () => {
     topicInput.value = pill.getAttribute("data-topic");
@@ -45,7 +155,38 @@ quickTopicPills.forEach(pill => {
   });
 });
 
+// Message Limit Selection Logic (5, 10, 15, 20 or Custom)
+limitPills.forEach(pill => {
+  pill.addEventListener("click", () => {
+    if (STATE.isSimulating) return;
+    limitPills.forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
+    customLimitInput.value = "";
+    STATE.maxRounds = parseInt(pill.getAttribute("data-limit"), 10);
+    updateScoreboard();
+  });
+});
+
+customLimitInput.addEventListener("input", () => {
+  if (STATE.isSimulating) return;
+  let val = parseInt(customLimitInput.value, 10);
+  if (isNaN(val)) return;
+  if (val > 20) {
+    val = 20;
+    customLimitInput.value = "20";
+  }
+  if (val < 1) {
+    val = 1;
+    customLimitInput.value = "1";
+  }
+  limitPills.forEach(p => p.classList.remove("active"));
+  STATE.maxRounds = val;
+  updateScoreboard();
+});
+
+// Buttons
 startBtn.addEventListener("click", startSimulation);
+stopBtn.addEventListener("click", stopSimulationMidway);
 resetBtn.addEventListener("click", resetSimulation);
 nextTurnBtn.addEventListener("click", () => {
   if (!STATE.activeAwaitingScore && !STATE.isFinished) {
@@ -115,7 +256,7 @@ function checkConcedeCondition() {
     return true;
   }
 
-  // Both completed max 20 messages
+  // Both completed chosen max rounds
   if (STATE.nMsgsCount >= STATE.maxRounds && STATE.pMsgsCount >= STATE.maxRounds) {
     endSimulationNormal();
     return true;
@@ -126,6 +267,7 @@ function checkConcedeCondition() {
 
 function endSimulationWithConcede(concedingBot, winningBot) {
   STATE.isFinished = true;
+  STATE.isSimulating = false;
   STATE.currentTurn = null;
   updateScoreboard();
 
@@ -133,6 +275,11 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   roundIndicator.textContent = "Arena Finished";
   ribbonStatus.textContent = `${concedingBot} stopped: Mathematical defeat.`;
   nextTurnBtn.disabled = true;
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+  topicInput.disabled = false;
+
+  saveWinStat(winningBot);
 
   appendSystemBanner(
     `🏳️ ${concedingBot} has conceded! Even with maximum 10/10 scores on remaining messages, it cannot catch up. ${winningBot} wins the Arena!`,
@@ -146,24 +293,64 @@ function endSimulationWithConcede(concedingBot, winningBot) {
 
 function endSimulationNormal() {
   STATE.isFinished = true;
+  STATE.isSimulating = false;
   STATE.currentTurn = null;
   updateScoreboard();
 
-  roundIndicator.textContent = "20 / 20 Rounds Completed";
+  roundIndicator.textContent = `${STATE.maxRounds} / ${STATE.maxRounds} Rounds Completed`;
   nextTurnBtn.disabled = true;
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+  topicInput.disabled = false;
 
   let winnerText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    winnerText = `🏆 Winner: N Waths (NVIDIA) with ${STATE.nScoreTotal} points!`;
+    winnerText = `🏆 Winner: N Waths with ${STATE.nScoreTotal} points!`;
+    saveWinStat("N Waths");
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    winnerText = `🏆 Winner: P Waths (OpenRouter) with ${STATE.pScoreTotal} points!`;
+    winnerText = `🏆 Winner: P Waths with ${STATE.pScoreTotal} points!`;
+    saveWinStat("P Waths");
   } else {
     winnerText = `🤝 It's a Tie! Both bots scored ${STATE.nScoreTotal} points.`;
+    saveWinStat("Tie");
   }
 
   turnStatus.textContent = "Simulation Complete";
-  ribbonStatus.textContent = "All 20 rounds finished.";
+  ribbonStatus.textContent = `All ${STATE.maxRounds} rounds finished.`;
   appendSystemBanner(winnerText, "winner");
+}
+
+function stopSimulationMidway() {
+  if (!STATE.isSimulating || STATE.isFinished) return;
+
+  STATE.isFinished = true;
+  STATE.isSimulating = false;
+  STATE.currentTurn = null;
+  updateScoreboard();
+
+  stopBtn.disabled = true;
+  nextTurnBtn.disabled = true;
+  startBtn.disabled = false;
+  topicInput.disabled = false;
+
+  turnStatus.textContent = "Arena Stopped Mid-Way by User";
+  roundIndicator.textContent = "Fight Halted";
+  ribbonStatus.textContent = "Match stopped by user judge.";
+
+  appendSystemBanner("🛑 Arena fight stopped mid-way by the user!", "stopped");
+
+  let decisionText = "";
+  if (STATE.nScoreTotal > STATE.pScoreTotal) {
+    decisionText = `🏆 Match Decision: N Waths wins on points (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    saveWinStat("N Waths");
+  } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
+    decisionText = `🏆 Match Decision: P Waths wins on points (${STATE.pScoreTotal} to ${STATE.nScoreTotal})`;
+    saveWinStat("P Waths");
+  } else {
+    decisionText = `🤝 Match Decision: Draw at stoppage (${STATE.nScoreTotal} to ${STATE.pScoreTotal})`;
+    saveWinStat("Tie");
+  }
+  appendSystemBanner(decisionText, "winner");
 }
 
 function appendSystemBanner(text, type = "normal") {
@@ -198,8 +385,9 @@ function startSimulation() {
   chatFeed.innerHTML = "";
   topicInput.disabled = true;
   startBtn.disabled = true;
+  stopBtn.disabled = false;
 
-  appendSystemBanner(`Arena Started on topic: "${topic}"`);
+  appendSystemBanner(`Arena Started on topic: "${topic}" (${STATE.maxRounds} msgs cap each)`);
   updateScoreboard();
   executeNextTurn();
 }
@@ -219,6 +407,7 @@ function resetSimulation() {
 
   topicInput.disabled = false;
   startBtn.disabled = false;
+  stopBtn.disabled = true;
   nextTurnBtn.disabled = true;
 
   chatFeed.innerHTML = `
@@ -226,10 +415,10 @@ function resetSimulation() {
       <div class="banner-icon">⚔️</div>
       <h2>Dialogue Simulation Rules</h2>
       <p>
-        <strong>N Waths</strong> speaks first on the chosen topic. Each bot is restricted to <strong>≤ 200 characters</strong> and minimal context memory.
+        <strong>N Waths</strong> speaks first on the selected topic. Both bots receive an equal allocation of messages (configurable up to 20 each) and strictly converse under <strong>≤ 200 characters</strong> with minimal context memory.
       </p>
       <p>
-        Rate each response from <strong>1 to 10</strong>. The bot with highest cumulative score across 20 messages wins. A bot will automatically forfeit if it can no longer mathematically win!
+        Score each message from <strong>1 to 10</strong>. The bot with highest cumulative score wins. If a bot mathematically cannot win or the fight is stopped, the arena halts!
       </p>
     </div>
   `;
@@ -263,10 +452,12 @@ async function executeNextTurn() {
     return;
   }
 
-  // Update status banner
-  roundIndicator.textContent = `Turn ${(STATE.nMsgsCount + STATE.pMsgsCount) + 1} of 40`;
+  const totalTurnsMax = STATE.maxRounds * 2;
+  const currentTurnNum = (STATE.nMsgsCount + STATE.pMsgsCount) + 1;
+
+  roundIndicator.textContent = `Turn ${currentTurnNum} of ${totalTurnsMax}`;
   turnStatus.textContent = `${bot} is composing message...`;
-  ribbonStatus.textContent = `Calling ${isN ? "NVIDIA NIM" : "OpenRouter"} API...`;
+  ribbonStatus.textContent = `${bot} is thinking...`;
   nextTurnBtn.disabled = true;
   updateScoreboard();
 
@@ -288,7 +479,12 @@ async function executeNextTurn() {
     const res = await fetch("/api/bot-turn", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: jsonPayload(bot, STATE.topic, STATE.lastMessage)
+      body: JSON.stringify({
+        bot: bot,
+        topic: STATE.topic,
+        last_message: STATE.lastMessage,
+        memory: STATE.lastMessage
+      })
     });
 
     const data = await res.json();
@@ -297,10 +493,18 @@ async function executeNextTurn() {
     if (data.error) {
       appendSystemBanner(`⚠️ ${bot} Error: ${data.error}`, "error");
       turnStatus.textContent = `${bot} encountered an error.`;
-      ribbonStatus.textContent = `Error occurred. Check API limits or credentials.`;
-      // Allow user to retry next turn
+      ribbonStatus.textContent = `Error occurred: ${data.error}`;
       nextTurnBtn.disabled = false;
       return;
+    }
+
+    // Accumulate tokens
+    if (data.tokens) {
+      const targetTokens = isN ? STATE.nTokens : STATE.pTokens;
+      targetTokens.prompt += data.tokens.prompt || 0;
+      targetTokens.completion += data.tokens.completion || 0;
+      targetTokens.total += data.tokens.total || 0;
+      updateDropdownTelemetry();
     }
 
     const messageText = data.text || "(No response)";
@@ -321,16 +525,6 @@ async function executeNextTurn() {
     ribbonStatus.textContent = "Failed to reach server.";
     nextTurnBtn.disabled = false;
   }
-}
-
-function jsonPayload(bot, topic, lastMessage) {
-  return JSON.stringify({
-    bot: bot,
-    topic: topic,
-    last_message: lastMessage,
-    // Very little context memory: only last message is passed
-    memory: lastMessage
-  });
 }
 
 function renderBotMessage(bot, text) {
@@ -396,7 +590,7 @@ function recordScore(bot, score, bubbleEl) {
     STATE.currentTurn = "N Waths";
   }
 
-  // Replace rating buttons with persistent score badge
+  // Replace rating buttons with score badge
   const ratingArea = bubbleEl.querySelector(".rating-area");
   if (ratingArea) {
     ratingArea.innerHTML = `
@@ -417,7 +611,6 @@ function recordScore(bot, score, bubbleEl) {
   ribbonStatus.textContent = `Ready for next turn.`;
 
   if (autoAdvanceToggle.checked) {
-    // Small delay for natural conversational rhythm
     setTimeout(() => {
       executeNextTurn();
     }, 700);
@@ -434,3 +627,6 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+// Initial telemetry fetch
+fetchBotInfo();
