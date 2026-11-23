@@ -47,7 +47,7 @@ def call_arena_master(n_character, p_character, scenario):
             {"role": "system", "content": "You are the neutral, fair Arena Master. Output only valid JSON. Do not include markdown or explanations outside the JSON."},
             {"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}
         ],
-        "max_tokens": 400,
+        "max_tokens": 1200,
         "temperature": 0.6
     }
 
@@ -62,20 +62,35 @@ def call_arena_master(n_character, p_character, scenario):
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as res:
+        with urllib.request.urlopen(req, timeout=20) as res:
             data = json.loads(res.read())
-            raw_content = data["choices"][0]["message"]["content"].strip()
-            # Parse JSON cleanly
+            msg = data["choices"][0]["message"]
+            raw_content = (msg.get("content") or "").strip()
+            # If content is empty, check reasoning as fallback
+            if not raw_content and msg.get("reasoning"):
+                raw_content = msg.get("reasoning").strip()
+
             clean_str = raw_content
             if "```json" in clean_str:
                 clean_str = clean_str.split("```json")[1].split("```")[0].strip()
             elif "```" in clean_str:
                 clean_str = clean_str.split("```")[1].split("```")[0].strip()
+
             fb = clean_str.find("{")
             lb = clean_str.rfind("}")
             if fb != -1 and lb != -1:
                 clean_str = clean_str[fb:lb+1]
-            briefing = json.loads(clean_str)
+
+            try:
+                briefing = json.loads(clean_str)
+            except Exception:
+                briefing = {
+                    "scenario_summary": (scenario or f"A high-stakes confrontation between {n_character} and {p_character}.")[:190],
+                    "n_role_context": f"Embody {n_character} with conviction, distinct personality, and tactical motives."[:190],
+                    "p_role_context": f"Embody {p_character} with sharp wits, unyielding persona, and counter-tactics."[:190],
+                    "first_speaker": "N Waths"
+                }
+
             usage = data.get("usage", {})
             return {
                 "briefing": briefing,
