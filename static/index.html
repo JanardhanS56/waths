@@ -17,18 +17,18 @@
         <span class="logo-badge">WATHS</span>
         <div class="brand-text">
           <h1>Dialogue Arena</h1>
-          <p>N Waths (NVIDIA) vs P Waths (OpenRouter)</p>
+          <p>N Waths vs P Waths — Live Conversation Duel</p>
         </div>
       </div>
       
       <div class="specs-badge">
         <span class="spec-item"><span class="dot lime"></span> Memory: Minimal (Last Turn)</span>
         <span class="spec-item"><span class="dot sky"></span> Limit: ≤ 200 Chars</span>
-        <span class="spec-item"><span class="dot white"></span> Cap: 20 Msgs Each</span>
+        <span class="spec-item"><span class="dot white"></span> Fair Play: Equal Msgs</span>
       </div>
     </header>
 
-    <!-- Topic Control Bar -->
+    <!-- Topic & Arena Configuration Bar -->
     <section class="topic-bar">
       <div class="topic-input-wrapper">
         <input 
@@ -40,36 +40,104 @@
         <button id="startBtn" class="btn btn-start">
           <span class="btn-icon">⚡</span> Start Arena
         </button>
-        <button id="resetBtn" class="btn btn-reset" title="Reset Simulation">
+        <button id="stopBtn" class="btn btn-stop" disabled title="Stop the fight mid-way">
+          <span class="btn-icon">⏹</span> Stop Fight
+        </button>
+        <button id="resetBtn" class="btn btn-reset" title="Reset Arena">
           ↺ Reset
         </button>
       </div>
 
-      <div class="quick-topics">
-        <span class="quick-label">Suggestions:</span>
-        <button class="topic-pill" data-topic="Will AI replace human artists or empower them?">AI & Creativity</button>
-        <button class="topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
-        <button class="topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple on Pizza</button>
-        <button class="topic-pill" data-topic="Would you rather live 500 years in the past or 500 years in the future?">Time Travel Dilemma</button>
+      <!-- Controls Row: Message Limit Selector + Quick Topics -->
+      <div class="arena-controls-row">
+        <!-- Message Cap Selector -->
+        <div class="msg-limit-selector">
+          <span class="control-label">Messages per bot:</span>
+          <div class="pill-group" id="limitPillGroup">
+            <button class="limit-pill" data-limit="5">5</button>
+            <button class="limit-pill" data-limit="10">10</button>
+            <button class="limit-pill" data-limit="15">15</button>
+            <button class="limit-pill active" data-limit="20">20</button>
+            <div class="custom-limit-wrap">
+              <input 
+                type="number" 
+                id="customLimitInput" 
+                min="1" 
+                max="20" 
+                placeholder="Custom (1-20)" 
+                title="Enter custom message cap (1 to 20)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Topics -->
+        <div class="quick-topics">
+          <span class="quick-label">Topics:</span>
+          <button class="topic-pill" data-topic="Will AI replace human artists or empower them?">AI & Art</button>
+          <button class="topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
+          <button class="topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple Pizza</button>
+          <button class="topic-pill" data-topic="Would you rather live 500 years in past or future?">Time Travel</button>
+        </div>
       </div>
     </section>
 
     <!-- Live Scoreboard -->
     <section class="scoreboard">
-      <!-- N Waths Card -->
-      <div class="bot-card n-waths-card" id="nCard">
-        <div class="bot-badge">
-          <span class="bot-avatar lime-avatar">N</span>
-          <div>
-            <div class="bot-name">N Waths</div>
-            <div class="bot-engine">NVIDIA NIM</div>
+      <!-- N Waths Card with Dropdown -->
+      <div class="bot-card-wrapper">
+        <div class="bot-card n-waths-card" id="nCard" role="button" tabindex="0" title="Click to view model profile & telemetry">
+          <div class="bot-badge">
+            <span class="bot-avatar lime-avatar">N</span>
+            <div>
+              <div class="bot-name-row">
+                <span class="bot-name">N Waths</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div class="bot-subtext">View Model Specs</div>
+            </div>
+          </div>
+          <div class="score-display">
+            <div class="score-val" id="nScore">0</div>
+            <div class="score-meta">
+              <span id="nAvg">Avg: 0.0</span>
+              <span id="nMsgs">0 / 20 msgs</span>
+            </div>
           </div>
         </div>
-        <div class="score-display">
-          <div class="score-val" id="nScore">0</div>
-          <div class="score-meta">
-            <span id="nAvg">Avg: 0.0</span>
-            <span id="nMsgs">0 / 20 msgs</span>
+
+        <!-- N Waths Dropdown Menu -->
+        <div class="bot-dropdown-menu n-dropdown" id="nDropdown">
+          <div class="dropdown-header">
+            <h4>N Waths Profile</h4>
+            <span class="badge lime-tag">Active</span>
+          </div>
+          <div class="dropdown-body">
+            <div class="info-row">
+              <span class="info-label">Provider</span>
+              <span class="info-val" id="nProviderVal">Loading...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-val font-mono" id="nModelVal">Loading...</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-row">
+              <span class="info-label">Arena Wins</span>
+              <span class="info-val highlight-lime" id="nWinsVal">0 wins (0%)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Prompt)</span>
+              <span class="info-val font-mono" id="nPromptTokVal">0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Completion)</span>
+              <span class="info-val font-mono" id="nCompTokVal">0</span>
+            </div>
+            <div class="info-row total-row">
+              <span class="info-label">Total Tokens Used</span>
+              <span class="info-val font-mono highlight-lime" id="nTotalTokVal">0</span>
+            </div>
           </div>
         </div>
       </div>
@@ -80,27 +148,67 @@
           <span id="roundIndicator">Ready to Start</span>
         </div>
         <div class="turn-status-banner" id="turnStatus">
-          Enter a topic above and click Start Arena
+          Enter a topic and click Start Arena
         </div>
         <div class="leader-chip" id="leaderChip">
           Tie (0 - 0)
         </div>
       </div>
 
-      <!-- P Waths Card -->
-      <div class="bot-card p-waths-card" id="pCard">
-        <div class="bot-badge">
-          <span class="bot-avatar sky-avatar">P</span>
-          <div>
-            <div class="bot-name">P Waths</div>
-            <div class="bot-engine">OpenRouter</div>
+      <!-- P Waths Card with Dropdown -->
+      <div class="bot-card-wrapper">
+        <div class="bot-card p-waths-card" id="pCard" role="button" tabindex="0" title="Click to view model profile & telemetry">
+          <div class="bot-badge">
+            <span class="bot-avatar sky-avatar">P</span>
+            <div>
+              <div class="bot-name-row">
+                <span class="bot-name">P Waths</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div class="bot-subtext">View Model Specs</div>
+            </div>
+          </div>
+          <div class="score-display">
+            <div class="score-val" id="pScore">0</div>
+            <div class="score-meta">
+              <span id="pAvg">Avg: 0.0</span>
+              <span id="pMsgs">0 / 20 msgs</span>
+            </div>
           </div>
         </div>
-        <div class="score-display">
-          <div class="score-val" id="pScore">0</div>
-          <div class="score-meta">
-            <span id="pAvg">Avg: 0.0</span>
-            <span id="pMsgs">0 / 20 msgs</span>
+
+        <!-- P Waths Dropdown Menu -->
+        <div class="bot-dropdown-menu p-dropdown" id="pDropdown">
+          <div class="dropdown-header">
+            <h4>P Waths Profile</h4>
+            <span class="badge sky-tag">Active</span>
+          </div>
+          <div class="dropdown-body">
+            <div class="info-row">
+              <span class="info-label">Provider</span>
+              <span class="info-val" id="pProviderVal">Loading...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-val font-mono" id="pModelVal">Loading...</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-row">
+              <span class="info-label">Arena Wins</span>
+              <span class="info-val highlight-sky" id="pWinsVal">0 wins (0%)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Prompt)</span>
+              <span class="info-val font-mono" id="pPromptTokVal">0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Completion)</span>
+              <span class="info-val font-mono" id="pCompTokVal">0</span>
+            </div>
+            <div class="info-row total-row">
+              <span class="info-label">Total Tokens Used</span>
+              <span class="info-val font-mono highlight-sky" id="pTotalTokVal">0</span>
+            </div>
           </div>
         </div>
       </div>
@@ -113,10 +221,10 @@
           <div class="banner-icon">⚔️</div>
           <h2>Dialogue Simulation Rules</h2>
           <p>
-            <strong>N Waths</strong> speaks first on the chosen topic. Each bot is restricted to <strong>≤ 200 characters</strong> and minimal context memory.
+            <strong>N Waths</strong> speaks first on the selected topic. Both bots receive an equal allocation of messages (configurable up to 20 each) and strictly converse under <strong>≤ 200 characters</strong> with minimal context memory.
           </p>
           <p>
-            Rate each response from <strong>1 to 10</strong>. The bot with the highest cumulative score across 20 messages wins. A bot will automatically forfeit if it can no longer mathematically win!
+            Score each message from <strong>1 to 10</strong>. The bot with highest cumulative score wins. If a bot mathematically cannot win or the fight is stopped, the arena halts!
           </p>
         </div>
       </div>
