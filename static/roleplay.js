@@ -129,19 +129,21 @@ function updateDropdownTelemetry() {
   const nRate = total > 0 ? Math.round((stats.nWins / total) * 100) : 0;
   const pRate = total > 0 ? Math.round((stats.pWins / total) * 100) : 0;
 
-  nProviderVal.textContent = STATE.botInfo["N Waths"].provider;
-  nModelVal.textContent = STATE.botInfo["N Waths"].model;
-  nWinsVal.textContent = `${stats.nWins} wins (${nRate}%)`;
-  nPromptTokVal.textContent = STATE.nTokens.prompt.toLocaleString();
-  nCompTokVal.textContent = STATE.nTokens.completion.toLocaleString();
-  nTotalTokVal.textContent = STATE.nTokens.total.toLocaleString();
+  const setSafe = (el, val) => { if (el) el.textContent = val; };
 
-  pProviderVal.textContent = STATE.botInfo["P Waths"].provider;
-  pModelVal.textContent = STATE.botInfo["P Waths"].model;
-  pWinsVal.textContent = `${stats.pWins} wins (${pRate}%)`;
-  pPromptTokVal.textContent = STATE.pTokens.prompt.toLocaleString();
-  pCompTokVal.textContent = STATE.pTokens.completion.toLocaleString();
-  pTotalTokVal.textContent = STATE.pTokens.total.toLocaleString();
+  setSafe(nProviderVal, STATE.botInfo["N Waths"]?.provider || "NVIDIA NIM");
+  setSafe(nModelVal, STATE.botInfo["N Waths"]?.model || "minimaxai/minimax-m3.1-flash");
+  setSafe(nWinsVal, `${stats.nWins} wins (${nRate}%)`);
+  setSafe(nPromptTokVal, STATE.nTokens.prompt.toLocaleString());
+  setSafe(nCompTokVal, STATE.nTokens.completion.toLocaleString());
+  setSafe(nTotalTokVal, STATE.nTokens.total.toLocaleString());
+
+  setSafe(pProviderVal, STATE.botInfo["P Waths"]?.provider || "OpenRouter");
+  setSafe(pModelVal, STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
+  setSafe(pWinsVal, `${stats.pWins} wins (${pRate}%)`);
+  setSafe(pPromptTokVal, STATE.pTokens.prompt.toLocaleString());
+  setSafe(pCompTokVal, STATE.pTokens.completion.toLocaleString());
+  setSafe(pTotalTokVal, STATE.pTokens.total.toLocaleString());
 }
 
 // Dropdown interactions
