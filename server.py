@@ -216,6 +216,11 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             if "</think>" in content:
                 content = content.split("</think>")[-1].strip()
             content = content.strip().strip('"')
+            if not content and choice.get("reasoning_content"):
+                import re
+                quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
+                if quotes:
+                    content = quotes[-1].strip()
             if len(content) > max_chars:
                 content = content[:max_chars - 3] + "..."
             usage = data.get("usage", {})
@@ -337,6 +342,11 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
             if "</think>" in content:
                 content = content.split("</think>")[-1].strip()
             content = content.strip().strip('"')
+            if not content and choice.get("reasoning_content"):
+                import re
+                quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
+                if quotes:
+                    content = quotes[-1].strip()
             if len(content) > max_chars:
                 content = content[:max_chars - 3] + "..."
             usage = data.get("usage", {})
