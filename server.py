@@ -152,10 +152,6 @@ def call_openrouter(topic, last_message, memory_context):
 def index():
     return send_from_directory("static", "index.html")
 
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory("static", path)
-
 @app.route("/api/bot-info", methods=["GET"])
 def bot_info():
     return jsonify({
@@ -192,6 +188,10 @@ def bot_turn():
         return jsonify({"error": f"Unknown bot type: {bot_type}"}), 400
 
     return jsonify(result)
+
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory("static", path)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)
