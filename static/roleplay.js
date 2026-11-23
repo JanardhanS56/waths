@@ -13,6 +13,7 @@ const STATE = {
   pMsgsCount: 0,
   currentTurn: null, // "N Waths" or "P Waths"
   lastMessage: "",
+  sessionMemory: "", // In-session context memory (max 500 chars, cleared after match)
   activeAwaitingScore: false,
   isSimulating: false,
   isFinished: false,
@@ -163,14 +164,14 @@ document.addEventListener("click", () => {
 nDropdown.addEventListener("click", (e) => e.stopPropagation());
 pDropdown.addEventListener("click", (e) => e.stopPropagation());
 
-// Briefing toggle button
+// Briefing drawer toggle button
 toggleBriefingBtn.addEventListener("click", () => {
-  if (masterContent.style.display === "none") {
-    masterContent.style.display = "flex";
-    toggleBriefingBtn.textContent = "Hide Briefing ▴";
-  } else {
+  if (masterContent.style.display === "block" || masterContent.style.display === "flex") {
     masterContent.style.display = "none";
-    toggleBriefingBtn.textContent = "Show Briefing ▾";
+    toggleBriefingBtn.textContent = "Roles ▾";
+  } else {
+    masterContent.style.display = "block";
+    toggleBriefingBtn.textContent = "Close ▴";
   }
 });
 
@@ -288,6 +289,7 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory upon match end
   updateScoreboard();
 
   const cChar = concedingBot === "N Waths" ? STATE.nChar : STATE.pChar;
@@ -319,6 +321,7 @@ function endSimulationNormal() {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory upon match end
   updateScoreboard();
 
   roundIndicator.textContent = `${STATE.maxRounds} / ${STATE.maxRounds} Rounds Completed`;
@@ -352,6 +355,7 @@ function stopSimulationMidway() {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory upon match end
   updateScoreboard();
 
   stopBtn.disabled = true;
@@ -454,14 +458,15 @@ async function summonMasterAndStart() {
 
     STATE.briefing = data.briefing;
 
-    // Display briefing card
+    // Display compact briefing strip (collapsed drawer by default to maximize chat space)
     masterBriefingCard.style.display = "block";
-    masterContent.style.display = "flex";
+    masterContent.style.display = "none";
+    toggleBriefingBtn.textContent = "Roles ▾";
     briefScenario.textContent = STATE.briefing.scenario_summary || scenario || "Confrontation setting";
     briefNRole.textContent = STATE.briefing.n_role_context || `${nChar} persona`;
     briefPRole.textContent = STATE.briefing.p_role_context || `${pChar} persona`;
 
-    appendSystemBanner(`⚖️ Arena Master has established context: "${STATE.briefing.scenario_summary}"`);
+    appendSystemBanner(`⚖️ Arena Master set scene: "${STATE.briefing.scenario_summary}"`);
     updateScoreboard();
 
     // Start with first turn
@@ -484,6 +489,7 @@ function resetSimulation() {
   STATE.nMsgsCount = 0;
   STATE.pMsgsCount = 0;
   STATE.lastMessage = "";
+  STATE.sessionMemory = ""; // Purge memory on reset
   STATE.currentTurn = null;
   STATE.isSimulating = false;
   STATE.isFinished = false;
@@ -570,7 +576,7 @@ async function executeNextTurn() {
         bot: bot,
         mode: "roleplay",
         last_message: STATE.lastMessage,
-        memory: STATE.lastMessage,
+        memory: STATE.sessionMemory,
         role_info: {
           char_name: activeChar,
           role_context: roleContext,
@@ -601,6 +607,12 @@ async function executeNextTurn() {
 
     const messageText = data.text || "(In-character silence)";
     STATE.lastMessage = messageText;
+
+    // Append to in-session context memory (max 500 chars)
+    STATE.sessionMemory += `${activeChar}: ${messageText}\n`;
+    if (STATE.sessionMemory.length > 500) {
+      STATE.sessionMemory = STATE.sessionMemory.slice(-500);
+    }
 
     if (isN) {
       STATE.nMsgsCount++;

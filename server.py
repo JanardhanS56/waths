@@ -112,6 +112,13 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
     if not NVIDIA_API_KEY:
         return {"error": "NVIDIA_API_KEY missing in .env"}
     
+    # In-session context memory capped strictly at 500 characters
+    session_mem = (memory_context or "").strip()
+    if len(session_mem) > 500:
+        session_mem = session_mem[-500:]
+
+    mem_block = f"\nSession history (last 500 chars):\n{session_mem}\n" if session_mem else ""
+
     if mode == "roleplay" and role_info:
         char_name = role_info.get("char_name", "Character")
         role_ctx = role_info.get("role_context", "")
@@ -124,14 +131,14 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             "CRITICAL RULES: "
             "1. Strictly output under 180 characters. "
             "2. Stay 100% in-character. Do not break character. "
-            "3. Output only spoken dialogue or actions (e.g. *actions*). No internal reasoning or thought dumps. "
-            "4. You only remember your role and the opponent's latest line."
+            "3. Output only spoken dialogue or actions (e.g. *actions*). No internal thoughts or meta text. "
+            "4. You have up to 500 chars of recent memory from this match session to maintain conversational continuity."
         )
 
         if last_message:
-            user_prompt = f"'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
+            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
         else:
-            user_prompt = f"Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
+            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
     else:
         system_prompt = (
             "You are 'N Waths', a witty, concise debate bot. "
@@ -139,12 +146,12 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             "CRITICAL RULES: "
             "1. Strictly output under 180 characters. "
             "2. Do not output reasoning, internal thinking, or thoughts. Output ONLY the spoken response. "
-            "3. You only remember the topic and the latest statement. "
+            "3. You have up to 500 chars of recent memory from this match session to maintain continuity. "
             "4. Stay engaging and directly on topic."
         )
 
         if last_message:
-            user_prompt = f"Topic: '{topic}'. Opponent said: '{last_message}'. Reply in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under 180 characters:"
         else:
             user_prompt = f"Topic: '{topic}'. Give your opening statement in under 180 characters:"
 
@@ -199,6 +206,13 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
     if not OPENROUTER_API_KEY:
         return {"error": "OPENROUTER_API_KEY missing in .env"}
 
+    # In-session context memory capped strictly at 500 characters
+    session_mem = (memory_context or "").strip()
+    if len(session_mem) > 500:
+        session_mem = session_mem[-500:]
+
+    mem_block = f"\nSession history (last 500 chars):\n{session_mem}\n" if session_mem else ""
+
     if mode == "roleplay" and role_info:
         char_name = role_info.get("char_name", "Character")
         role_ctx = role_info.get("role_context", "")
@@ -212,26 +226,26 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
             "1. Strictly output under 180 characters. "
             "2. Stay 100% in-character. Do not break character. "
             "3. Output only spoken dialogue or actions. No meta commentary. "
-            "4. You only remember your role and the opponent's latest line."
+            "4. You have up to 500 chars of recent memory from this match session to maintain conversational continuity."
         )
 
         if last_message:
-            user_prompt = f"'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
+            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
         else:
-            user_prompt = f"Deliver your opening in-character thought as '{char_name}' to '{opp_char}' in under 180 characters:"
+            user_prompt = f"{mem_block}Deliver your opening in-character thought as '{char_name}' to '{opp_char}' in under 180 characters:"
     else:
         system_prompt = (
             "You are 'P Waths', a sharp, smart conversationalist bot. "
             "You are competing in a dialogue duel against N Waths. "
             "CRITICAL RULES: "
             "1. Strictly output under 180 characters. "
-            "2. You only remember the topic and the latest statement. "
+            "2. You have up to 500 chars of recent memory from this match session to maintain continuity. "
             "3. Output only your direct dialogue. "
             "4. Be punchy, conversational, and directly address the opponent."
         )
 
         if last_message:
-            user_prompt = f"Topic: '{topic}'. Opponent said: '{last_message}'. Reply in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under 180 characters:"
         else:
             user_prompt = f"Topic: '{topic}'. Give your opening thought in under 180 characters:"
 

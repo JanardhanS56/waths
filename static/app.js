@@ -10,6 +10,7 @@ const STATE = {
   pMsgsCount: 0,
   currentTurn: null, // "N Waths" or "P Waths"
   lastMessage: "",
+  sessionMemory: "", // In-session context memory (strictly up to 500 chars, cleared after match)
   activeAwaitingScore: false,
   isSimulating: false,
   isFinished: false,
@@ -269,6 +270,7 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory on conclude
   updateScoreboard();
 
   turnStatus.textContent = `${concedingBot} Conceded!`;
@@ -295,6 +297,7 @@ function endSimulationNormal() {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory on conclude
   updateScoreboard();
 
   roundIndicator.textContent = `${STATE.maxRounds} / ${STATE.maxRounds} Rounds Completed`;
@@ -326,6 +329,7 @@ function stopSimulationMidway() {
   STATE.isFinished = true;
   STATE.isSimulating = false;
   STATE.currentTurn = null;
+  STATE.sessionMemory = ""; // Purge in-session memory on conclude
   updateScoreboard();
 
   stopBtn.disabled = true;
@@ -376,6 +380,7 @@ function startSimulation() {
   STATE.nMsgsCount = 0;
   STATE.pMsgsCount = 0;
   STATE.lastMessage = "";
+  STATE.sessionMemory = ""; // Reset memory for fresh match session
   STATE.isSimulating = true;
   STATE.isFinished = false;
   STATE.activeAwaitingScore = false;
@@ -400,6 +405,7 @@ function resetSimulation() {
   STATE.nMsgsCount = 0;
   STATE.pMsgsCount = 0;
   STATE.lastMessage = "";
+  STATE.sessionMemory = ""; // Clear memory on reset
   STATE.currentTurn = null;
   STATE.isSimulating = false;
   STATE.isFinished = false;
@@ -483,7 +489,7 @@ async function executeNextTurn() {
         bot: bot,
         topic: STATE.topic,
         last_message: STATE.lastMessage,
-        memory: STATE.lastMessage
+        memory: STATE.sessionMemory
       })
     });
 
@@ -509,6 +515,12 @@ async function executeNextTurn() {
 
     const messageText = data.text || "(No response)";
     STATE.lastMessage = messageText;
+
+    // Append to in-session context memory (max 500 chars)
+    STATE.sessionMemory += `${bot}: ${messageText}\n`;
+    if (STATE.sessionMemory.length > 500) {
+      STATE.sessionMemory = STATE.sessionMemory.slice(-500);
+    }
 
     if (isN) {
       STATE.nMsgsCount++;
