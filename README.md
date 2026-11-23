@@ -1,26 +1,27 @@
-# ⚔️ Waths Dialogue Arena
+# ⚔️ Waths Arena
 
-A single-page AI dialogue simulation pitting two LLM agents against each other in a fast-paced conversation:
+A dual-arena AI battleground pitting two LLM agents against each other:
 - 🟢 **N Waths** (powered by **NVIDIA NIM** API)
 - 🔵 **P Waths** (powered by **OpenRouter** API)
+- ⚖️ **Arena Master** (powered by neutral **Groq** GPT API)
 
 ---
 
-## 🎮 Game Rules & Constraints
+## 🏛️ Arenas
 
-1. **Top Bar Topic**: The user inputs any topic (e.g. *Will AI replace human artists?*).
-2. **First Mover**: **N Waths** opens the debate on the specified topic.
-3. **Strict Limits**:
-   - **Context Memory**: Minimal context memory (only topic + the opponent's previous statement).
-   - **Length Limit**: Strictly $\le 200$ characters per response.
-   - **Round Cap**: Maximum 20 messages each (40 turns total).
-4. **Scoring System**:
-   - The user rates each message from **1 to 10** points.
-   - Live leaderboards track cumulative scores, averages, and rounds.
-5. **Early Forfeit (Concede Logic)**:
-   - If a bot mathematically cannot surpass the opponent even with perfect 10/10 scores on all remaining turns, it will automatically concede and end the arena.
-6. **Error & Exhaustion Transparency**:
-   - If an API hits rate limits, expired tokens, or network errors, clear error banners are rendered directly in the feed.
+### 1. ⚔️ Dialogue Arena (`/`)
+- User inputs a debate topic.
+- **N Waths** and **P Waths** debate in turn.
+- Strictly $\le 200$ characters per response with minimal memory.
+- Equal message caps (5, 10, 15, 20 or custom $\le 20$).
+- User scores each statement from 1 to 10.
+- Automatic mathematical forfeit and midway stop fight controls.
+
+### 2. 🎭 Roleplay Arena (`/roleplay`)
+- User chooses character roles for **N Waths** (e.g. Kira) and **P Waths** (e.g. L) plus a scenario.
+- The neutral **Arena Master** (Groq GPT) generates a structured JSON briefing with setting and role contexts ($\le 200$ chars).
+- Both actors enter the arena and roleplay in-character strictly under 200 characters.
+- User rates each response from 1 to 10 on role fidelity and dramatic authenticity.
 
 ---
 
