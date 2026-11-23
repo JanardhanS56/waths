@@ -53,6 +53,12 @@ function saveWinStat(winner) {
   updateDropdownTelemetry();
 }
 
+// Safe DOM text setter
+function setText(target, val) {
+  const el = typeof target === "string" ? document.getElementById(target) : target;
+  if (el) el.textContent = (val !== undefined && val !== null) ? val : "";
+}
+
 // DOM Elements
 const nCharInput = document.getElementById("nCharInput");
 const pCharInput = document.getElementById("pCharInput");
@@ -167,15 +173,17 @@ nDropdown.addEventListener("click", (e) => e.stopPropagation());
 pDropdown.addEventListener("click", (e) => e.stopPropagation());
 
 // Briefing drawer toggle button
-toggleBriefingBtn.addEventListener("click", () => {
-  if (masterContent.style.display === "block" || masterContent.style.display === "flex") {
-    masterContent.style.display = "none";
-    toggleBriefingBtn.textContent = "Roles ▾";
-  } else {
-    masterContent.style.display = "block";
-    toggleBriefingBtn.textContent = "Close ▴";
-  }
-});
+if (toggleBriefingBtn) {
+  toggleBriefingBtn.addEventListener("click", () => {
+    if (masterContent && (masterContent.style.display === "block" || masterContent.style.display === "flex")) {
+      masterContent.style.display = "none";
+      setText(toggleBriefingBtn, "Roles ▾");
+    } else if (masterContent) {
+      masterContent.style.display = "block";
+      setText(toggleBriefingBtn, "Close ▴");
+    }
+  });
+}
 
 // Preset Pills
 presetPills.forEach(pill => {
@@ -226,27 +234,27 @@ nextTurnBtn.addEventListener("click", () => {
 });
 
 function updateScoreboard() {
-  nScoreEl.textContent = STATE.nScoreTotal;
-  pScoreEl.textContent = STATE.pScoreTotal;
+  setText(nScoreEl, STATE.nScoreTotal);
+  setText(pScoreEl, STATE.pScoreTotal);
 
   const nAvg = STATE.nMsgsCount > 0 ? (STATE.nScoreTotal / STATE.nMsgsCount).toFixed(1) : "0.0";
   const pAvg = STATE.pMsgsCount > 0 ? (STATE.pScoreTotal / STATE.pMsgsCount).toFixed(1) : "0.0";
 
-  nAvgEl.textContent = `Avg: ${nAvg}`;
-  pAvgEl.textContent = `Avg: ${pAvg}`;
+  setText(nAvgEl, `Avg: ${nAvg}`);
+  setText(pAvgEl, `Avg: ${pAvg}`);
 
-  nMsgsEl.textContent = `${STATE.nMsgsCount} / ${STATE.maxRounds} msgs`;
-  pMsgsEl.textContent = `${STATE.pMsgsCount} / ${STATE.maxRounds} msgs`;
+  setText(nMsgsEl, `${STATE.nMsgsCount} / ${STATE.maxRounds} msgs`);
+  setText(pMsgsEl, `${STATE.pMsgsCount} / ${STATE.maxRounds} msgs`);
 
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    leaderChip.textContent = `${STATE.nChar} leads (+${STATE.nScoreTotal - STATE.pScoreTotal})`;
-    leaderChip.style.color = "var(--lime-primary)";
+    setText(leaderChip, `${STATE.nChar} leads (+${STATE.nScoreTotal - STATE.pScoreTotal})`);
+    if (leaderChip) leaderChip.style.color = "var(--lime-primary)";
   } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    leaderChip.textContent = `${STATE.pChar} leads (+${STATE.pScoreTotal - STATE.nScoreTotal})`;
-    leaderChip.style.color = "var(--sky-primary)";
+    setText(leaderChip, `${STATE.pChar} leads (+${STATE.pScoreTotal - STATE.nScoreTotal})`);
+    if (leaderChip) leaderChip.style.color = "var(--sky-primary)";
   } else {
-    leaderChip.textContent = `Tie (${STATE.nScoreTotal} - ${STATE.pScoreTotal})`;
-    leaderChip.style.color = "var(--text-muted)";
+    setText(leaderChip, `Tie (${STATE.nScoreTotal} - ${STATE.pScoreTotal})`);
+    if (leaderChip) leaderChip.style.color = "var(--text-muted)";
   }
 
   // Active turn glow
@@ -297,15 +305,15 @@ function endSimulationWithConcede(concedingBot, winningBot) {
   const cChar = concedingBot === "N Waths" ? STATE.nChar : STATE.pChar;
   const wChar = winningBot === "N Waths" ? STATE.nChar : STATE.pChar;
 
-  turnStatus.textContent = `${cChar} Conceded!`;
-  roundIndicator.textContent = "Arena Finished";
-  ribbonStatus.textContent = `${cChar} conceded: Cannot overtake opponent score.`;
-  nextTurnBtn.disabled = true;
-  stopBtn.disabled = true;
-  startBtn.disabled = false;
-  nCharInput.disabled = false;
-  pCharInput.disabled = false;
-  scenarioInput.disabled = false;
+  setText(turnStatus, `${cChar} Conceded!`);
+  setText(roundIndicator, "Arena Finished");
+  setText(ribbonStatus, `${cChar} conceded: Cannot overtake opponent score.`);
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (stopBtn) stopBtn.disabled = true;
+  if (startBtn) startBtn.disabled = false;
+  if (nCharInput) nCharInput.disabled = false;
+  if (pCharInput) pCharInput.disabled = false;
+  if (scenarioInput) scenarioInput.disabled = false;
 
   saveWinStat(winningBot);
 
@@ -326,13 +334,13 @@ function endSimulationNormal() {
   STATE.sessionMemory = ""; // Purge in-session memory upon match end
   updateScoreboard();
 
-  roundIndicator.textContent = `${STATE.maxRounds} / ${STATE.maxRounds} Rounds Completed`;
-  nextTurnBtn.disabled = true;
-  stopBtn.disabled = true;
-  startBtn.disabled = false;
-  nCharInput.disabled = false;
-  pCharInput.disabled = false;
-  scenarioInput.disabled = false;
+  setText(roundIndicator, `${STATE.maxRounds} / ${STATE.maxRounds} Rounds Completed`);
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (stopBtn) stopBtn.disabled = true;
+  if (startBtn) startBtn.disabled = false;
+  if (nCharInput) nCharInput.disabled = false;
+  if (pCharInput) pCharInput.disabled = false;
+  if (scenarioInput) scenarioInput.disabled = false;
 
   let winnerText = "";
   if (STATE.nScoreTotal > STATE.pScoreTotal) {
@@ -346,8 +354,8 @@ function endSimulationNormal() {
     saveWinStat("Tie");
   }
 
-  turnStatus.textContent = "Roleplay Duel Concluded";
-  ribbonStatus.textContent = `All ${STATE.maxRounds} rounds completed.`;
+  setText(turnStatus, "Roleplay Duel Concluded");
+  setText(ribbonStatus, `All ${STATE.maxRounds} rounds completed.`);
   appendSystemBanner(winnerText, "winner");
 }
 
@@ -360,16 +368,16 @@ function stopSimulationMidway() {
   STATE.sessionMemory = ""; // Purge in-session memory upon match end
   updateScoreboard();
 
-  stopBtn.disabled = true;
-  nextTurnBtn.disabled = true;
-  startBtn.disabled = false;
-  nCharInput.disabled = false;
-  pCharInput.disabled = false;
-  scenarioInput.disabled = false;
+  if (stopBtn) stopBtn.disabled = true;
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (startBtn) startBtn.disabled = false;
+  if (nCharInput) nCharInput.disabled = false;
+  if (pCharInput) pCharInput.disabled = false;
+  if (scenarioInput) scenarioInput.disabled = false;
 
-  turnStatus.textContent = "Arena Stopped Mid-Way by User";
-  roundIndicator.textContent = "Roleplay Halted";
-  ribbonStatus.textContent = "Match stopped by user judge.";
+  setText(turnStatus, "Arena Stopped Mid-Way by User");
+  setText(roundIndicator, "Roleplay Halted");
+  setText(ribbonStatus, "Match stopped by user judge.");
 
   appendSystemBanner("🛑 Roleplay duel stopped mid-way by the user!", "stopped");
 
@@ -420,20 +428,20 @@ async function summonMasterAndStart() {
   STATE.currentTurn = "N Waths";
 
   // Update card subtexts with character personas
-  nCharSubtext.textContent = `Role: ${nChar}`;
-  pCharSubtext.textContent = `Role: ${pChar}`;
+  setText(nCharSubtext, `Role: ${nChar}`);
+  setText(pCharSubtext, `Role: ${pChar}`);
 
   // Disable controls during initialization
-  nCharInput.disabled = true;
-  pCharInput.disabled = true;
-  scenarioInput.disabled = true;
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-  chatFeed.innerHTML = "";
+  if (nCharInput) nCharInput.disabled = true;
+  if (pCharInput) pCharInput.disabled = true;
+  if (scenarioInput) scenarioInput.disabled = true;
+  if (startBtn) startBtn.disabled = true;
+  if (stopBtn) stopBtn.disabled = false;
+  if (chatFeed) chatFeed.innerHTML = "";
 
-  turnStatus.textContent = "Arena Master (Groq GPT) is formulating neutral briefing...";
-  ribbonStatus.textContent = "Generating roleplay directives...";
-  roundIndicator.textContent = "Master Briefing Phase";
+  setText(turnStatus, "Arena Master (Groq GPT) is formulating neutral briefing...");
+  setText(ribbonStatus, "Generating roleplay directives...");
+  setText(roundIndicator, "Master Briefing Phase");
 
   // Request Arena Master Briefing from Backend (Groq GPT)
   try {
@@ -450,25 +458,25 @@ async function summonMasterAndStart() {
     const data = await res.json();
     if (data.error) {
       appendSystemBanner(`⚠️ Arena Master Error: ${data.error}`, "error");
-      turnStatus.textContent = "Arena Master failed to generate briefing.";
-      startBtn.disabled = false;
-      nCharInput.disabled = false;
-      pCharInput.disabled = false;
-      scenarioInput.disabled = false;
+      setText(turnStatus, "Arena Master failed to generate briefing.");
+      if (startBtn) startBtn.disabled = false;
+      if (nCharInput) nCharInput.disabled = false;
+      if (pCharInput) pCharInput.disabled = false;
+      if (scenarioInput) scenarioInput.disabled = false;
       return;
     }
 
     STATE.briefing = data.briefing;
 
     // Display compact briefing strip (collapsed drawer by default to maximize chat space)
-    masterBriefingCard.style.display = "block";
-    masterContent.style.display = "none";
-    toggleBriefingBtn.textContent = "Roles ▾";
-    briefScenario.textContent = STATE.briefing.scenario_summary || scenario || "Confrontation setting";
-    briefNRole.textContent = STATE.briefing.n_role_context || `${nChar} persona`;
-    briefPRole.textContent = STATE.briefing.p_role_context || `${pChar} persona`;
+    if (masterBriefingCard) masterBriefingCard.style.display = "block";
+    if (masterContent) masterContent.style.display = "none";
+    setText(toggleBriefingBtn, "Roles ▾");
+    setText(briefScenario, STATE.briefing?.scenario_summary || scenario || "Confrontation setting");
+    setText(briefNRole, STATE.briefing?.n_role_context || `${nChar} persona`);
+    setText(briefPRole, STATE.briefing?.p_role_context || `${pChar} persona`);
 
-    appendSystemBanner(`⚖️ Arena Master set scene: "${STATE.briefing.scenario_summary}"`);
+    appendSystemBanner(`⚖️ Arena Master set scene: "${STATE.briefing?.scenario_summary || 'Duel active'}"`);
     updateScoreboard();
 
     // Start with first turn
@@ -476,11 +484,11 @@ async function summonMasterAndStart() {
 
   } catch (err) {
     appendSystemBanner(`⚠️ Network error calling Arena Master: ${err.message}`, "error");
-    turnStatus.textContent = "Error reaching server.";
-    startBtn.disabled = false;
-    nCharInput.disabled = false;
-    pCharInput.disabled = false;
-    scenarioInput.disabled = false;
+    setText(turnStatus, "Error reaching server.");
+    if (startBtn) startBtn.disabled = false;
+    if (nCharInput) nCharInput.disabled = false;
+    if (pCharInput) pCharInput.disabled = false;
+    if (scenarioInput) scenarioInput.disabled = false;
   }
 }
 
@@ -497,32 +505,34 @@ function resetSimulation() {
   STATE.isFinished = false;
   STATE.activeAwaitingScore = false;
 
-  nCharInput.disabled = false;
-  pCharInput.disabled = false;
-  scenarioInput.disabled = false;
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  nextTurnBtn.disabled = true;
-  masterBriefingCard.style.display = "none";
+  if (nCharInput) nCharInput.disabled = false;
+  if (pCharInput) pCharInput.disabled = false;
+  if (scenarioInput) scenarioInput.disabled = false;
+  if (startBtn) startBtn.disabled = false;
+  if (stopBtn) stopBtn.disabled = true;
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (masterBriefingCard) masterBriefingCard.style.display = "none";
 
-  chatFeed.innerHTML = `
-    <div class="welcome-banner">
-      <div class="banner-icon">🎭</div>
-      <h2>Roleplay Arena Rules</h2>
-      <p>
-        Assign any character to <strong>N Waths</strong> and <strong>P Waths</strong>. The neutral <strong>Arena Master</strong> briefs both actors with balanced, strictly 200-character contexts.
-      </p>
-      <p>
-        Each message is limited to <strong>≤ 200 characters</strong>. Rate each response from <strong>1 to 10</strong> based on character depth, dialogue authenticity, and dramatic tension!
-      </p>
-    </div>
-  `;
+  if (chatFeed) {
+    chatFeed.innerHTML = `
+      <div class="welcome-banner">
+        <div class="banner-icon">🎭</div>
+        <h2>Roleplay Arena Rules</h2>
+        <p>
+          Assign any character to <strong>N Waths</strong> and <strong>P Waths</strong>. The neutral <strong>Arena Master</strong> briefs both actors with balanced, strictly 200-character contexts.
+        </p>
+        <p>
+          Each message is limited to <strong>≤ 200 characters</strong>. Rate each response from <strong>1 to 10</strong> based on character depth, dialogue authenticity, and dramatic tension!
+        </p>
+      </div>
+    `;
+  }
 
-  roundIndicator.textContent = "Ready to Roleplay";
-  turnStatus.textContent = "Configure characters and click Summon Master";
-  leaderChip.textContent = "Tie (0 - 0)";
-  leaderChip.style.color = "var(--text-muted)";
-  ribbonStatus.textContent = "Configure characters to begin roleplay duel...";
+  setText(roundIndicator, "Ready to Roleplay");
+  setText(turnStatus, "Configure characters and click Summon Master");
+  setText(leaderChip, "Tie (0 - 0)");
+  if (leaderChip) leaderChip.style.color = "var(--text-muted)";
+  setText(ribbonStatus, "Configure characters to begin roleplay duel...");
   updateScoreboard();
 }
 
@@ -550,10 +560,10 @@ async function executeNextTurn() {
   const totalTurnsMax = STATE.maxRounds * 2;
   const currentTurnNum = (STATE.nMsgsCount + STATE.pMsgsCount) + 1;
 
-  roundIndicator.textContent = `Turn ${currentTurnNum} of ${totalTurnsMax}`;
-  turnStatus.textContent = `${activeChar} (${bot}) is acting...`;
-  ribbonStatus.textContent = `${activeChar} is composing in-character response...`;
-  nextTurnBtn.disabled = true;
+  setText(roundIndicator, `Turn ${currentTurnNum} of ${totalTurnsMax}`);
+  setText(turnStatus, `${activeChar} (${bot}) is acting...`);
+  setText(ribbonStatus, `${activeChar} is composing in-character response...`);
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
   updateScoreboard();
 
   // Typing indicator
@@ -593,9 +603,9 @@ async function executeNextTurn() {
 
     if (data.error) {
       appendSystemBanner(`⚠️ ${activeChar} Error: ${data.error}`, "error");
-      turnStatus.textContent = `${activeChar} encountered an error.`;
-      ribbonStatus.textContent = `Error: ${data.error}`;
-      nextTurnBtn.disabled = false;
+      setText(turnStatus, `${activeChar} encountered an error.`);
+      setText(ribbonStatus, `Error: ${data.error}`);
+      if (nextTurnBtn) nextTurnBtn.disabled = false;
       return;
     }
 
@@ -627,9 +637,9 @@ async function executeNextTurn() {
   } catch (err) {
     typingRow.remove();
     appendSystemBanner(`⚠️ Network Error: ${err.message}`, "error");
-    turnStatus.textContent = "Network error communicating with server.";
-    ribbonStatus.textContent = "Failed to reach server.";
-    nextTurnBtn.disabled = false;
+    setText(turnStatus, "Network error communicating with server.");
+    setText(ribbonStatus, "Failed to reach server.");
+    if (nextTurnBtn) nextTurnBtn.disabled = false;
   }
 }
 
@@ -669,9 +679,9 @@ function renderRoleplayMessage(bot, charName, text) {
   chatViewport.scrollTop = chatViewport.scrollHeight;
 
   STATE.activeAwaitingScore = true;
-  turnStatus.textContent = `Score ${charName}'s roleplay fidelity (1-10)`;
-  ribbonStatus.textContent = `Waiting for judge score...`;
-  nextTurnBtn.disabled = true;
+  setText(turnStatus, `Score ${charName}'s roleplay fidelity (1-10)`);
+  setText(ribbonStatus, `Waiting for judge score...`);
+  if (nextTurnBtn) nextTurnBtn.disabled = true;
 
   const scoreBtns = bubble.querySelectorAll(".score-btn");
   scoreBtns.forEach(btn => {
@@ -710,14 +720,14 @@ function recordScore(bot, score, bubbleEl) {
   }
 
   const nextChar = STATE.currentTurn === "N Waths" ? STATE.nChar : STATE.pChar;
-  turnStatus.textContent = `Score recorded (+${score}). Next: ${nextChar}`;
-  ribbonStatus.textContent = `Ready for next turn.`;
+  setText(turnStatus, `Score recorded (+${score}). Next: ${nextChar}`);
+  setText(ribbonStatus, `Ready for next turn.`);
 
-  if (autoAdvanceToggle.checked) {
+  if (autoAdvanceToggle && autoAdvanceToggle.checked) {
     setTimeout(() => {
       executeNextTurn();
     }, 700);
-  } else {
+  } else if (nextTurnBtn) {
     nextTurnBtn.disabled = false;
   }
 }
