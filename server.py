@@ -27,7 +27,7 @@ def call_nvidia(topic, last_message, memory_context):
         "CRITICAL RULES: "
         "1. Strictly output under 180 characters. "
         "2. Do not output reasoning, internal thinking, or thoughts. Output ONLY the spoken response. "
-        "3. You only remember the topic and the latest statement. "
+        "3. You only remember the topic and the current arena session/chat. "
         "4. Stay engaging and directly on topic."
     )
 
@@ -43,7 +43,7 @@ def call_nvidia(topic, last_message, memory_context):
             {"role": "user", "content": user_prompt}
         ],
         "max_tokens": 250,
-        "temperature": 0.75
+        "temperature": 0.85
     }
 
     req = urllib.request.Request(
@@ -91,7 +91,7 @@ def call_openrouter(topic, last_message, memory_context):
         "You are competing in a dialogue duel against N Waths. "
         "CRITICAL RULES: "
         "1. Strictly output under 180 characters. "
-        "2. You only remember the topic and the latest statement. "
+        "2. You only remember the topic and the current session/chat. "
         "3. Output only your direct dialogue. "
         "4. Be punchy, conversational, and directly address the opponent."
     )
@@ -108,7 +108,7 @@ def call_openrouter(topic, last_message, memory_context):
             {"role": "user", "content": user_prompt}
         ],
         "max_tokens": 120,
-        "temperature": 0.75
+        "temperature": 0.85
     }
 
     req = urllib.request.Request(
