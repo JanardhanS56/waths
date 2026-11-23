@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roleplay Arena — N Waths vs P Waths</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Bar Navigation with Arena Switcher -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="logo-badge">WATHS</span>
+        <div class="brand-text">
+          <h1>Roleplay Arena</h1>
+          <p>Character Roleplay Duel — Neutral Arena Master (Groq GPT)</p>
+        </div>
+      </div>
+      
+      <!-- Arena Mode Tabs -->
+      <nav class="arena-nav-tabs">
+        <a href="/" class="nav-tab">⚔️ Dialogue Arena</a>
+        <a href="/roleplay" class="nav-tab active">🎭 Roleplay Arena</a>
+      </nav>
+
+      <div class="specs-badge">
+        <span class="spec-item"><span class="dot lime"></span> Role Limit: ≤ 200 Chars</span>
+        <span class="spec-item"><span class="dot neutral"></span> Neutral Master: Groq</span>
+        <span class="spec-item"><span class="dot white"></span> Equal Turns</span>
+      </div>
+    </header>
+
+    <!-- Character Setup & Arena Master Generation Bar -->
+    <section class="topic-bar roleplay-setup-bar">
+      <div class="character-inputs-grid">
+        <div class="char-input-field">
+          <label for="nCharInput">🟢 N Waths Plays As:</label>
+          <input 
+            type="text" 
+            id="nCharInput" 
+            placeholder="e.g. Kira (Light Yagami)" 
+            maxlength="60"
+            value="Kira (Light Yagami)"
+          />
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="char-input-field">
+          <label for="pCharInput">🔵 P Waths Plays As:</label>
+          <input 
+            type="text" 
+            id="pCharInput" 
+            placeholder="e.g. L (L Lawliet)" 
+            maxlength="60"
+            value="L (L Lawliet)"
+          />
+        </div>
+      </div>
+
+      <div class="scenario-input-wrapper">
+        <input 
+          type="text" 
+          id="scenarioInput" 
+          placeholder="Scenario or setting (e.g. Quiet coffee shop in Tokyo, testing each other with veiled threats)..." 
+          maxlength="160"
+        />
+        <button id="startBtn" class="btn btn-start">
+          <span class="btn-icon">🎭</span> Summon Master & Start
+        </button>
+        <button id="stopBtn" class="btn btn-stop" disabled title="Stop the roleplay fight">
+          <span class="btn-icon">⏹</span> Stop Fight
+        </button>
+        <button id="resetBtn" class="btn btn-reset" title="Reset Arena">
+          ↺ Reset
+        </button>
+      </div>
+
+      <!-- Controls Row: Message Limit + Presets -->
+      <div class="arena-controls-row">
+        <!-- Message Cap Selector -->
+        <div class="msg-limit-selector">
+          <span class="control-label">Rounds per actor:</span>
+          <div class="pill-group" id="limitPillGroup">
+            <button class="limit-pill" data-limit="5">5</button>
+            <button class="limit-pill" data-limit="10">10</button>
+            <button class="limit-pill" data-limit="15">15</button>
+            <button class="limit-pill active" data-limit="20">20</button>
+            <div class="custom-limit-wrap">
+              <input 
+                type="number" 
+                id="customLimitInput" 
+                min="1" 
+                max="20" 
+                placeholder="Custom (1-20)" 
+                title="Enter custom message cap (1 to 20)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Roleplay Presets -->
+        <div class="quick-topics">
+          <span class="quick-label">Presets:</span>
+          <button class="preset-pill" data-n="Kira (Light Yagami)" data-p="L (L Lawliet)" data-scenario="Quiet Tokyo coffee shop, testing each other with veiled deductions">Kira vs L</button>
+          <button class="preset-pill" data-n="The Joker" data-p="Batman" data-scenario="Interrogation room in Arkham Asylum during a city-wide blackout">Joker vs Batman</button>
+          <button class="preset-pill" data-n="Sherlock Holmes" data-p="Professor Moriarty" data-scenario="A foggy evening on Baker Street before a train departure">Sherlock vs Moriarty</button>
+          <button class="preset-pill" data-n="Tony Stark" data-p="Steve Rogers" data-scenario="Debating the Sokovia Accords in the Avengers compound hangar">Iron Man vs Cap</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arena Master Briefing Card (Hidden until generated) -->
+    <section class="master-briefing-card" id="masterBriefingCard">
+      <div class="master-header">
+        <div class="master-title">
+          <span class="master-icon">⚖️</span>
+          <div>
+            <h3>Arena Master Briefing</h3>
+            <span class="master-meta" id="masterMeta">Neutral Directive Generated</span>
+          </div>
+        </div>
+        <button class="toggle-briefing-btn" id="toggleBriefingBtn">Hide Briefing ▴</button>
+      </div>
+      <div class="master-content" id="masterContent">
+        <div class="briefing-item scenario-box">
+          <span class="brief-tag">Setting & Stakes</span>
+          <p id="briefScenario">Generating scenario context...</p>
+        </div>
+        <div class="briefing-roles-grid">
+          <div class="briefing-item n-role-box">
+            <span class="brief-tag lime-text">N Waths Role Context</span>
+            <p id="briefNRole">Awaiting role generation...</p>
+          </div>
+          <div class="briefing-item p-role-box">
+            <span class="brief-tag sky-text">P Waths Role Context</span>
+            <p id="briefPRole">Awaiting role generation...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Scoreboard -->
+    <section class="scoreboard">
+      <!-- N Waths Card with Dropdown -->
+      <div class="bot-card-wrapper">
+        <div class="bot-card n-waths-card" id="nCard" role="button" tabindex="0" title="Click to view model profile & telemetry">
+          <div class="bot-badge">
+            <span class="bot-avatar lime-avatar">N</span>
+            <div>
+              <div class="bot-name-row">
+                <span class="bot-name" id="nCardName">N Waths</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div class="bot-subtext" id="nCharSubtext">Role: Kira</div>
+            </div>
+          </div>
+          <div class="score-display">
+            <div class="score-val" id="nScore">0</div>
+            <div class="score-meta">
+              <span id="nAvg">Avg: 0.0</span>
+              <span id="nMsgs">0 / 20 msgs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- N Waths Dropdown Menu -->
+        <div class="bot-dropdown-menu n-dropdown" id="nDropdown">
+          <div class="dropdown-header">
+            <h4>N Waths Profile</h4>
+            <span class="badge lime-tag">Active</span>
+          </div>
+          <div class="dropdown-body">
+            <div class="info-row">
+              <span class="info-label">Provider</span>
+              <span class="info-val" id="nProviderVal">Loading...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-val font-mono" id="nModelVal">Loading...</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-row">
+              <span class="info-label">Roleplay Wins</span>
+              <span class="info-val highlight-lime" id="nWinsVal">0 wins (0%)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Prompt)</span>
+              <span class="info-val font-mono" id="nPromptTokVal">0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Completion)</span>
+              <span class="info-val font-mono" id="nCompTokVal">0</span>
+            </div>
+            <div class="info-row total-row">
+              <span class="info-label">Total Tokens Used</span>
+              <span class="info-val font-mono highlight-lime" id="nTotalTokVal">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Status / Match Info -->
+      <div class="match-center">
+        <div class="round-tracker">
+          <span id="roundIndicator">Ready to Roleplay</span>
+        </div>
+        <div class="turn-status-banner" id="turnStatus">
+          Configure characters and click Summon Master
+        </div>
+        <div class="leader-chip" id="leaderChip">
+          Tie (0 - 0)
+        </div>
+      </div>
+
+      <!-- P Waths Card with Dropdown -->
+      <div class="bot-card-wrapper">
+        <div class="bot-card p-waths-card" id="pCard" role="button" tabindex="0" title="Click to view model profile & telemetry">
+          <div class="bot-badge">
+            <span class="bot-avatar sky-avatar">P</span>
+            <div>
+              <div class="bot-name-row">
+                <span class="bot-name" id="pCardName">P Waths</span>
+                <span class="dropdown-arrow">▾</span>
+              </div>
+              <div class="bot-subtext" id="pCharSubtext">Role: L</div>
+            </div>
+          </div>
+          <div class="score-display">
+            <div class="score-val" id="pScore">0</div>
+            <div class="score-meta">
+              <span id="pAvg">Avg: 0.0</span>
+              <span id="pMsgs">0 / 20 msgs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- P Waths Dropdown Menu -->
+        <div class="bot-dropdown-menu p-dropdown" id="pDropdown">
+          <div class="dropdown-header">
+            <h4>P Waths Profile</h4>
+            <span class="badge sky-tag">Active</span>
+          </div>
+          <div class="dropdown-body">
+            <div class="info-row">
+              <span class="info-label">Provider</span>
+              <span class="info-val" id="pProviderVal">Loading...</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-val font-mono" id="pModelVal">Loading...</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-row">
+              <span class="info-label">Roleplay Wins</span>
+              <span class="info-val highlight-sky" id="pWinsVal">0 wins (0%)</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Prompt)</span>
+              <span class="info-val font-mono" id="pPromptTokVal">0</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tokens (Completion)</span>
+              <span class="info-val font-mono" id="pCompTokVal">0</span>
+            </div>
+            <div class="info-row total-row">
+              <span class="info-label">Total Tokens Used</span>
+              <span class="info-val font-mono highlight-sky" id="pTotalTokVal">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chat Stream Area -->
+    <main class="chat-viewport" id="chatViewport">
+      <div class="chat-feed" id="chatFeed">
+        <div class="welcome-banner">
+          <div class="banner-icon">🎭</div>
+          <h2>Roleplay Arena Rules</h2>
+          <p>
+            Assign any character to <strong>N Waths</strong> and <strong>P Waths</strong>. The neutral <strong>Arena Master</strong> briefs both actors with balanced, strictly 200-character contexts.
+          </p>
+          <p>
+            Each message is limited to <strong>≤ 200 characters</strong>. Rate each response from <strong>1 to 10</strong> based on character depth, dialogue authenticity, and dramatic tension!
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Action Ribbon -->
+    <footer class="action-ribbon" id="actionRibbon">
+      <div class="ribbon-status" id="ribbonStatus">
+        Configure characters to begin roleplay duel...
+      </div>
+      <div class="ribbon-controls">
+        <label class="toggle-container">
+          <input type="checkbox" id="autoAdvanceToggle" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Auto-trigger next actor after scoring</span>
+        </label>
+        <button id="nextTurnBtn" class="btn btn-next" disabled>
+          Next Turn ➔
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="roleplay.js"></script>
+</body>
+</html>
