@@ -21,9 +21,9 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '').strip('"\'')
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '').strip('"\'')
 
 # Selected models
-NVIDIA_MODEL = "minimaxai/minimax-m3.1-flash"
-OPENROUTER_MODEL = "meta-llama/llama-3.2-3b-instruct"
-GROQ_MODEL = "openai/gpt-oss-120b"
+NVIDIA_MODEL = os.getenv('NVIDIA_MODEL', 'stepfun-ai/step-5-preview')
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.2-3b-instruct')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 
 def call_arena_master(n_character, p_character, scenario):
     """Arena Master powered by Groq (GPT-OSS) to generate neutral roleplay briefing JSON."""
@@ -114,16 +114,39 @@ def call_arena_master(n_character, p_character, scenario):
     except Exception as e:
         return {"error": f"Groq Connection Error: {str(e)}"}
 
-def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=None):
+def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=None, config=None):
     if not NVIDIA_API_KEY:
         return {"error": "NVIDIA_API_KEY missing in .env"}
     
-    # In-session context memory capped strictly at 500 characters
-    session_mem = (memory_context or "").strip()
-    if len(session_mem) > 500:
-        session_mem = session_mem[-500:]
+    config = config or {}
+    model = config.get("model") or NVIDIA_MODEL
+    try:
+        temperature = float(config.get("temperature", 0.7))
+    except (ValueError, TypeError):
+        temperature = 0.7
+    try:
+        max_chars = int(config.get("max_chars", 200))
+    except (ValueError, TypeError):
+        max_chars = 200
+    try:
+        memory_limit = int(config.get("memory_limit", 500))
+    except (ValueError, TypeError):
+        memory_limit = 500
+    try:
+        top_p = float(config.get("top_p", 0.9))
+    except (ValueError, TypeError):
+        top_p = 0.9
+    try:
+        max_tokens = int(config.get("max_tokens", 450))
+    except (ValueError, TypeError):
+        max_tokens = 450
 
-    mem_block = f"\nSession history (last 500 chars):\n{session_mem}\n" if session_mem else ""
+    session_mem = (memory_context or "").strip()
+    if len(session_mem) > memory_limit:
+        session_mem = session_mem[-memory_limit:]
+
+    mem_block = f"\nSession history (last {memory_limit} chars):\n{session_mem}\n" if session_mem else ""
+    char_limit_prompt = max(40, max_chars - 20)
 
     if mode == "roleplay" and role_info:
         char_name = role_info.get("char_name", "Character")
@@ -136,40 +159,43 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
             f"SETTING & SCENARIO: {scenario}\n"
             "ROLEPLAY DIRECTIVES:\n"
-            "1. Output strictly under 180 characters. Never exceed 180 characters.\n"
-            f"2. You are 100% in-character as '{char_name}'. Never speak out of character or refer to yourself as an AI.\n"
-            f"3. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
-            "4. No internal reasoning, thought dumps, or tags. Output only dialogue and action.\n"
-            "5. Use your 500-char session memory to react directly to what happened in this match."
+            "1. Answer immediately with dialogue only. Do not spend reasoning tokens or output internal thoughts.\n"
+            f"2. Output strictly under {char_limit_prompt} characters. Never exceed {char_limit_prompt} characters.\n"
+            f"3. You are 100% in-character as '{char_name}'. Never speak out of character or refer to yourself as an AI.\n"
+            f"4. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
+            "5. Output ONLY spoken dialogue and action. No meta commentary or reasoning reflections.\n"
+            f"6. Use your {memory_limit}-char session memory to react directly to what happened in this match."
         )
 
         if last_message:
-            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
+            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under {char_limit_prompt} characters:"
         else:
-            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
+            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under {char_limit_prompt} characters:"
     else:
         system_prompt = (
             "SYSTEM IDENTITY: You are 'N Waths', an expressive, witty conversationalist in a live dialogue duel against P Waths.\n"
             "DIRECTIVES:\n"
-            "1. Strictly output under 180 characters.\n"
-            "2. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
-            "3. Use your 500-char session memory to maintain conversational continuity.\n"
-            "4. Stay engaging, punchy, and on topic."
+            "1. Answer immediately with dialogue only. Do not spend reasoning tokens.\n"
+            f"2. Strictly output under {char_limit_prompt} characters.\n"
+            "3. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
+            f"4. Use your {memory_limit}-char session memory to maintain conversational continuity.\n"
+            "5. Stay engaging, punchy, and on topic."
         )
 
         if last_message:
-            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under {char_limit_prompt} characters:"
         else:
-            user_prompt = f"Topic: '{topic}'. Give your opening statement in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'. Give your opening statement in under {char_limit_prompt} characters:"
 
     payload = {
-        "model": NVIDIA_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        "max_tokens": 250,
-        "temperature": 0.8
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "top_p": top_p
     }
 
     req = urllib.request.Request(
@@ -182,20 +208,21 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as res:
+        with urllib.request.urlopen(req, timeout=90) as res:
             data = json.loads(res.read())
             choice = data["choices"][0]["message"]
-            content = choice.get("content") or choice.get("reasoning_content") or ""
+            # Important: never use reasoning_content, which reveals internal thoughts
+            content = choice.get("content") or ""
             if "</think>" in content:
                 content = content.split("</think>")[-1].strip()
             content = content.strip().strip('"')
-            if len(content) > 200:
-                content = content[:197] + "..."
+            if len(content) > max_chars:
+                content = content[:max_chars - 3] + "..."
             usage = data.get("usage", {})
             return {
                 "text": content,
                 "raw_length": len(content),
-                "model": NVIDIA_MODEL,
+                "model": model,
                 "provider": "NVIDIA NIM",
                 "tokens": {
                     "prompt": usage.get("prompt_tokens", 0),
@@ -209,16 +236,39 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
     except Exception as e:
         return {"error": f"NVIDIA Connection Error: {str(e)}"}
 
-def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_info=None):
+def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_info=None, config=None):
     if not OPENROUTER_API_KEY:
         return {"error": "OPENROUTER_API_KEY missing in .env"}
 
-    # In-session context memory capped strictly at 500 characters
-    session_mem = (memory_context or "").strip()
-    if len(session_mem) > 500:
-        session_mem = session_mem[-500:]
+    config = config or {}
+    model = config.get("model") or OPENROUTER_MODEL
+    try:
+        temperature = float(config.get("temperature", 0.7))
+    except (ValueError, TypeError):
+        temperature = 0.7
+    try:
+        max_chars = int(config.get("max_chars", 200))
+    except (ValueError, TypeError):
+        max_chars = 200
+    try:
+        memory_limit = int(config.get("memory_limit", 500))
+    except (ValueError, TypeError):
+        memory_limit = 500
+    try:
+        top_p = float(config.get("top_p", 0.9))
+    except (ValueError, TypeError):
+        top_p = 0.9
+    try:
+        max_tokens = int(config.get("max_tokens", 200))
+    except (ValueError, TypeError):
+        max_tokens = 200
 
-    mem_block = f"\nSession history (last 500 chars):\n{session_mem}\n" if session_mem else ""
+    session_mem = (memory_context or "").strip()
+    if len(session_mem) > memory_limit:
+        session_mem = session_mem[-memory_limit:]
+
+    mem_block = f"\nSession history (last {memory_limit} chars):\n{session_mem}\n" if session_mem else ""
+    char_limit_prompt = max(40, max_chars - 20)
 
     if mode == "roleplay" and role_info:
         char_name = role_info.get("char_name", "Character")
@@ -231,40 +281,41 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
             f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
             f"SETTING & SCENARIO: {scenario}\n"
             "ROLEPLAY DIRECTIVES:\n"
-            "1. Output strictly under 180 characters. Never exceed 180 characters.\n"
+            f"1. Output strictly under {char_limit_prompt} characters. Never exceed {char_limit_prompt} characters.\n"
             f"2. You are 100% in-character as '{char_name}'. Never break character or refer to yourself as an AI.\n"
             f"3. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
             "4. No internal reasoning, thought dumps, or tags. Output only dialogue and action.\n"
-            "5. Use your 500-char session memory to react directly to what happened in this match."
+            f"5. Use your {memory_limit}-char session memory to react directly to what happened in this match."
         )
 
         if last_message:
-            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
+            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under {char_limit_prompt} characters:"
         else:
-            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
+            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under {char_limit_prompt} characters:"
     else:
         system_prompt = (
             "SYSTEM IDENTITY: You are 'P Waths', a sharp, smart conversationalist bot in a live dialogue duel against N Waths.\n"
             "DIRECTIVES:\n"
-            "1. Strictly output under 180 characters.\n"
+            f"1. Strictly output under {char_limit_prompt} characters.\n"
             "2. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
-            "3. Use your 500-char session memory to maintain conversational continuity.\n"
+            f"3. Use your {memory_limit}-char session memory to maintain conversational continuity.\n"
             "4. Stay engaging, punchy, and on topic."
         )
 
         if last_message:
-            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under {char_limit_prompt} characters:"
         else:
-            user_prompt = f"Topic: '{topic}'. Give your opening thought in under 180 characters:"
+            user_prompt = f"Topic: '{topic}'. Give your opening thought in under {char_limit_prompt} characters:"
 
     payload = {
-        "model": OPENROUTER_MODEL,
+        "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        "max_tokens": 120,
-        "temperature": 0.8
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "top_p": top_p
     }
 
     req = urllib.request.Request(
@@ -279,18 +330,20 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as res:
+        with urllib.request.urlopen(req, timeout=90) as res:
             data = json.loads(res.read())
             choice = data["choices"][0]["message"]
             content = choice.get("content") or ""
+            if "</think>" in content:
+                content = content.split("</think>")[-1].strip()
             content = content.strip().strip('"')
-            if len(content) > 200:
-                content = content[:197] + "..."
+            if len(content) > max_chars:
+                content = content[:max_chars - 3] + "..."
             usage = data.get("usage", {})
             return {
                 "text": content,
                 "raw_length": len(content),
-                "model": OPENROUTER_MODEL,
+                "model": model,
                 "provider": "OpenRouter",
                 "tokens": {
                     "prompt": usage.get("prompt_tokens", 0),
@@ -362,10 +415,12 @@ def bot_turn():
     if mode == "dialogue" and not topic:
         return jsonify({"error": "No topic provided"}), 400
 
+    config = data.get("config", {})
+
     if bot_type == "N Waths":
-        result = call_nvidia(topic, last_message, memory_context, mode=mode, role_info=role_info)
+        result = call_nvidia(topic, last_message, memory_context, mode=mode, role_info=role_info, config=config)
     elif bot_type == "P Waths":
-        result = call_openrouter(topic, last_message, memory_context, mode=mode, role_info=role_info)
+        result = call_openrouter(topic, last_message, memory_context, mode=mode, role_info=role_info, config=config)
     else:
         return jsonify({"error": f"Unknown bot type: {bot_type}"}), 400
 
