@@ -9,6 +9,13 @@ load_dotenv()
 
 app = Flask(__name__, static_folder='static')
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 NVIDIA_API_KEY = os.getenv('NVIDIA_API_KEY', '').strip('"\'')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '').strip('"\'')
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '').strip('"\'')
@@ -24,14 +31,13 @@ def call_arena_master(n_character, p_character, scenario):
         return {"error": "GROQ_API_KEY missing in .env"}
 
     system_prompt = (
-        "You are the neutral, fair Arena Master presiding over a roleplay duel between two actors: "
-        "Actor 1 ('N Waths') and Actor 2 ('P Waths'). "
-        "Your duty is strictly neutral and balanced. "
-        "Create brief, punchy contexts (under 190 characters each) for both roles and the setting. "
-        "Output ONLY a valid JSON object matching this schema: "
-        '{"scenario_summary": "string under 190 chars", '
-        '"n_role_context": "string under 190 chars defining N Waths character and motivation", '
-        '"p_role_context": "string under 190 chars defining P Waths character and motivation", '
+        "SYSTEM IDENTITY: You are the neutral, fair Arena Master presiding over a roleplay duel between two actors: "
+        "Actor 1 ('N Waths') and Actor 2 ('P Waths'). You never take sides.\n"
+        "YOUR DUTY: Establish a compelling, balanced stage and distinct role directions under 190 characters each.\n"
+        "Output ONLY a raw valid JSON object with these exact keys:\n"
+        '{"scenario_summary": "Setting and stakes under 190 chars", '
+        '"n_role_context": "Role, personality, and objective for N Waths under 190 chars", '
+        '"p_role_context": "Role, personality, and objective for P Waths under 190 chars", '
         '"first_speaker": "N Waths"}'
     )
 
@@ -126,13 +132,15 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
         opp_char = role_info.get("opp_char", "Opponent")
 
         system_prompt = (
-            f"You are strictly role-playing as '{char_name}'. "
-            f"Your character context: {role_ctx}. Setting: {scenario}. "
-            "CRITICAL RULES: "
-            "1. Strictly output under 180 characters. "
-            "2. Stay 100% in-character. Do not break character. "
-            "3. Output only spoken dialogue or actions (e.g. *actions*). No internal thoughts or meta text. "
-            "4. You have up to 500 chars of recent memory from this match session to maintain conversational continuity."
+            f"SYSTEM IDENTITY: You are N Waths, currently role-playing as '{char_name}'.\n"
+            f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
+            f"SETTING & SCENARIO: {scenario}\n"
+            "ROLEPLAY DIRECTIVES:\n"
+            "1. Output strictly under 180 characters. Never exceed 180 characters.\n"
+            f"2. You are 100% in-character as '{char_name}'. Never speak out of character or refer to yourself as an AI.\n"
+            f"3. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
+            "4. No internal reasoning, thought dumps, or tags. Output only dialogue and action.\n"
+            "5. Use your 500-char session memory to react directly to what happened in this match."
         )
 
         if last_message:
@@ -141,13 +149,12 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
     else:
         system_prompt = (
-            "You are 'N Waths', a witty, concise debate bot. "
-            "You are competing in a dialogue duel. "
-            "CRITICAL RULES: "
-            "1. Strictly output under 180 characters. "
-            "2. Do not output reasoning, internal thinking, or thoughts. Output ONLY the spoken response. "
-            "3. You have up to 500 chars of recent memory from this match session to maintain continuity. "
-            "4. Stay engaging and directly on topic."
+            "SYSTEM IDENTITY: You are 'N Waths', an expressive, witty conversationalist in a live dialogue duel against P Waths.\n"
+            "DIRECTIVES:\n"
+            "1. Strictly output under 180 characters.\n"
+            "2. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
+            "3. Use your 500-char session memory to maintain conversational continuity.\n"
+            "4. Stay engaging, punchy, and on topic."
         )
 
         if last_message:
@@ -220,28 +227,29 @@ def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_i
         opp_char = role_info.get("opp_char", "Opponent")
 
         system_prompt = (
-            f"You are strictly role-playing as '{char_name}'. "
-            f"Your character context: {role_ctx}. Setting: {scenario}. "
-            "CRITICAL RULES: "
-            "1. Strictly output under 180 characters. "
-            "2. Stay 100% in-character. Do not break character. "
-            "3. Output only spoken dialogue or actions. No meta commentary. "
-            "4. You have up to 500 chars of recent memory from this match session to maintain conversational continuity."
+            f"SYSTEM IDENTITY: You are P Waths, an elite duel actor currently role-playing as '{char_name}'.\n"
+            f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
+            f"SETTING & SCENARIO: {scenario}\n"
+            "ROLEPLAY DIRECTIVES:\n"
+            "1. Output strictly under 180 characters. Never exceed 180 characters.\n"
+            f"2. You are 100% in-character as '{char_name}'. Never break character or refer to yourself as an AI.\n"
+            f"3. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
+            "4. No internal reasoning, thought dumps, or tags. Output only dialogue and action.\n"
+            "5. Use your 500-char session memory to react directly to what happened in this match."
         )
 
         if last_message:
             user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under 180 characters:"
         else:
-            user_prompt = f"{mem_block}Deliver your opening in-character thought as '{char_name}' to '{opp_char}' in under 180 characters:"
+            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under 180 characters:"
     else:
         system_prompt = (
-            "You are 'P Waths', a sharp, smart conversationalist bot. "
-            "You are competing in a dialogue duel against N Waths. "
-            "CRITICAL RULES: "
-            "1. Strictly output under 180 characters. "
-            "2. You have up to 500 chars of recent memory from this match session to maintain continuity. "
-            "3. Output only your direct dialogue. "
-            "4. Be punchy, conversational, and directly address the opponent."
+            "SYSTEM IDENTITY: You are 'P Waths', a sharp, smart conversationalist bot in a live dialogue duel against N Waths.\n"
+            "DIRECTIVES:\n"
+            "1. Strictly output under 180 characters.\n"
+            "2. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
+            "3. Use your 500-char session memory to maintain conversational continuity.\n"
+            "4. Stay engaging, punchy, and on topic."
         )
 
         if last_message:
