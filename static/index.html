@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waths Arena — N Waths vs P Waths</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Bar Header -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="logo-badge">WATHS</span>
+        <div class="brand-text">
+          <h1>Dialogue Arena</h1>
+          <p>N Waths (NVIDIA) vs P Waths (OpenRouter)</p>
+        </div>
+      </div>
+      
+      <div class="specs-badge">
+        <span class="spec-item"><span class="dot lime"></span> Memory: Minimal (Last Turn)</span>
+        <span class="spec-item"><span class="dot sky"></span> Limit: ≤ 200 Chars</span>
+        <span class="spec-item"><span class="dot white"></span> Cap: 20 Msgs Each</span>
+      </div>
+    </header>
+
+    <!-- Topic Control Bar -->
+    <section class="topic-bar">
+      <div class="topic-input-wrapper">
+        <input 
+          type="text" 
+          id="topicInput" 
+          placeholder="Enter a topic for the bots to debate (e.g. Will AI ever experience genuine emotions?)..." 
+          maxlength="150"
+        />
+        <button id="startBtn" class="btn btn-start">
+          <span class="btn-icon">⚡</span> Start Arena
+        </button>
+        <button id="resetBtn" class="btn btn-reset" title="Reset Simulation">
+          ↺ Reset
+        </button>
+      </div>
+
+      <div class="quick-topics">
+        <span class="quick-label">Suggestions:</span>
+        <button class="topic-pill" data-topic="Will AI replace human artists or empower them?">AI & Creativity</button>
+        <button class="topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
+        <button class="topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple on Pizza</button>
+        <button class="topic-pill" data-topic="Would you rather live 500 years in the past or 500 years in the future?">Time Travel Dilemma</button>
+      </div>
+    </section>
+
+    <!-- Live Scoreboard -->
+    <section class="scoreboard">
+      <!-- N Waths Card -->
+      <div class="bot-card n-waths-card" id="nCard">
+        <div class="bot-badge">
+          <span class="bot-avatar lime-avatar">N</span>
+          <div>
+            <div class="bot-name">N Waths</div>
+            <div class="bot-engine">NVIDIA NIM</div>
+          </div>
+        </div>
+        <div class="score-display">
+          <div class="score-val" id="nScore">0</div>
+          <div class="score-meta">
+            <span id="nAvg">Avg: 0.0</span>
+            <span id="nMsgs">0 / 20 msgs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Status / Match Info -->
+      <div class="match-center">
+        <div class="round-tracker">
+          <span id="roundIndicator">Ready to Start</span>
+        </div>
+        <div class="turn-status-banner" id="turnStatus">
+          Enter a topic above and click Start Arena
+        </div>
+        <div class="leader-chip" id="leaderChip">
+          Tie (0 - 0)
+        </div>
+      </div>
+
+      <!-- P Waths Card -->
+      <div class="bot-card p-waths-card" id="pCard">
+        <div class="bot-badge">
+          <span class="bot-avatar sky-avatar">P</span>
+          <div>
+            <div class="bot-name">P Waths</div>
+            <div class="bot-engine">OpenRouter</div>
+          </div>
+        </div>
+        <div class="score-display">
+          <div class="score-val" id="pScore">0</div>
+          <div class="score-meta">
+            <span id="pAvg">Avg: 0.0</span>
+            <span id="pMsgs">0 / 20 msgs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chat Stream Area -->
+    <main class="chat-viewport" id="chatViewport">
+      <div class="chat-feed" id="chatFeed">
+        <div class="welcome-banner">
+          <div class="banner-icon">⚔️</div>
+          <h2>Dialogue Simulation Rules</h2>
+          <p>
+            <strong>N Waths</strong> speaks first on the chosen topic. Each bot is restricted to <strong>≤ 200 characters</strong> and minimal context memory.
+          </p>
+          <p>
+            Rate each response from <strong>1 to 10</strong>. The bot with the highest cumulative score across 20 messages wins. A bot will automatically forfeit if it can no longer mathematically win!
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Action Ribbon -->
+    <footer class="action-ribbon" id="actionRibbon">
+      <div class="ribbon-status" id="ribbonStatus">
+        Awaiting topic to begin simulation...
+      </div>
+      <div class="ribbon-controls">
+        <label class="toggle-container">
+          <input type="checkbox" id="autoAdvanceToggle" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Auto-trigger next bot after rating</span>
+        </label>
+        <button id="nextTurnBtn" class="btn btn-next" disabled>
+          Next Turn ➔
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
