@@ -408,6 +408,8 @@ function startSimulation() {
 
   // Reset UI
   chatFeed.innerHTML = "";
+  const archedDocket = document.getElementById("archedDocket");
+  if (archedDocket) archedDocket.style.display = "none";
   topicInput.disabled = true;
   startBtn.disabled = true;
   stopBtn.disabled = false;
@@ -436,44 +438,15 @@ function resetSimulation() {
   stopBtn.disabled = true;
   nextTurnBtn.disabled = true;
 
-  chatFeed.innerHTML = `
-    <div class="welcome-banner compact-welcome">
-      <div class="docket-header">
-        <span class="docket-status-tag">EVALUATION DOCKET</span>
-        <span class="docket-id">BENCHMARK-RUN // IDLE</span>
-      </div>
-      <div class="docket-body">
-        <div class="docket-main">
-          <h3>Head-to-Head Dialogue Evaluation</h3>
-          <p>Two distinct LLM architectures run synchronous, turn-based dialogue under strict character and memory constraints. Rate every statement on logic, punchiness, and topic relevance.</p>
-        </div>
-        <div class="docket-specs-grid">
-          <div class="spec-block">
-            <span class="spec-k">N ACTOR</span>
-            <span class="spec-v">NVIDIA NIM (Stepfun)</span>
-          </div>
-          <div class="spec-block">
-            <span class="spec-k">P ACTOR</span>
-            <span class="spec-v">OpenRouter (Llama 3.2)</span>
-          </div>
-          <div class="spec-block">
-            <span class="spec-k">CHAR CAP</span>
-            <span class="spec-v">≤ 200 characters</span>
-          </div>
-          <div class="spec-block">
-            <span class="spec-k">MEMORY</span>
-            <span class="spec-v">500 char rolling session</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+  chatFeed.innerHTML = "";
+  const archedDocket = document.getElementById("archedDocket");
+  if (archedDocket) archedDocket.style.display = "";
 
-  roundIndicator.textContent = "Ready to Start";
-  turnStatus.textContent = "Enter a topic above and click Start Arena";
+  roundIndicator.textContent = "READY";
+  turnStatus.textContent = "Enter a topic above and click Start";
   leaderChip.textContent = "Tie (0 - 0)";
   leaderChip.style.color = "var(--text-muted)";
-  ribbonStatus.textContent = "Awaiting topic to begin simulation...";
+  ribbonStatus.textContent = "Ready";
   updateScoreboard();
 }
 
@@ -605,7 +578,7 @@ function renderBotMessage(bot, text, maxChars = 200) {
       </span>
     </div>
     <div class="msg-text">${escapeHtml(text)}</div>
-    <div class="rating-area" id="ratingArea">
+    <div class="rating-area">
       <div class="rating-prompt">
         <span>Score this statement (1 - 10):</span>
       </div>
