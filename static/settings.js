@@ -266,6 +266,11 @@
       modal.addEventListener("click", (e) => {
         if (e.target === modal) closeModal();
       });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.style.display === "flex") {
+          closeModal();
+        }
+      });
     }
 
     // Dynamic slider updates with circular gauge animation

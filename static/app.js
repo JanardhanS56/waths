@@ -54,6 +54,7 @@ const turnStatus = document.getElementById("turnStatus");
 const leaderChip = document.getElementById("leaderChip");
 const ribbonStatus = document.getElementById("ribbonStatus");
 const nextTurnBtn = document.getElementById("nextTurnBtn");
+const exportBtn = document.getElementById("exportBtn");
 const autoAdvanceToggle = document.getElementById("autoAdvanceToggle");
 const quickTopicPills = document.querySelectorAll(".topic-pill");
 const limitPills = document.querySelectorAll(".limit-pill");
@@ -82,6 +83,7 @@ async function fetchBotInfo() {
       const data = await res.json();
       if (data["N Waths"]) STATE.botInfo["N Waths"] = data["N Waths"];
       if (data["P Waths"]) STATE.botInfo["P Waths"] = data["P Waths"];
+      window.WathsArena.checkApiKeyReadiness(STATE.botInfo, turnStatus);
     }
   } catch (e) {}
   updateDropdownTelemetry();
@@ -138,6 +140,12 @@ nextTurnBtn.addEventListener("click", () => {
     executeNextTurn();
   }
 });
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    window.WathsArena.exportTranscript(chatFeed, "waths-dialogue", `Dialogue Benchmark: ${STATE.topic || "Match"}`);
+  });
+}
+window.WathsArena.bindScoringShortcuts(() => STATE.activeAwaitingScore, chatFeed);
 
 topicInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !STATE.isSimulating) {
@@ -311,6 +319,7 @@ function resetSimulation() {
   startBtn.disabled = false;
   stopBtn.disabled = true;
   nextTurnBtn.disabled = true;
+  if (exportBtn) exportBtn.disabled = true;
 
   chatFeed.innerHTML = "";
   const archedDocket = document.getElementById("archedDocket");
@@ -465,6 +474,7 @@ function renderBotMessage(bot, text, maxChars = 200) {
   row.appendChild(bubble);
   chatFeed.appendChild(row);
   chatViewport.scrollTop = chatViewport.scrollHeight;
+  if (exportBtn) exportBtn.disabled = false;
 
   STATE.activeAwaitingScore = true;
   turnStatus.textContent = `Please score ${bot}'s response (1-10)`;
