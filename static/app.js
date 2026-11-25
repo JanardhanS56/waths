@@ -1,8 +1,9 @@
 // Waths Dialogue Simulation Game Logic
 
+const STATS_KEY = "waths_arena_stats";
+
 const STATE = {
   topic: "",
-  round: 0,
   maxRounds: 20, // default 20 messages per bot, configurable up to 20
   nScoreTotal: 0,
   pScoreTotal: 0,
@@ -10,7 +11,7 @@ const STATE = {
   pMsgsCount: 0,
   currentTurn: null, // "N Waths" or "P Waths"
   lastMessage: "",
-  sessionMemory: "", // In-session context memory (strictly up to 500 chars, cleared after match)
+  sessionMemory: "", // In-session context memory (cleared after match)
   activeAwaitingScore: false,
   isSimulating: false,
   isFinished: false,
@@ -26,25 +27,8 @@ const STATE = {
   }
 };
 
-// LocalStorage Win Stats
-function getStoredStats() {
-  try {
-    const raw = localStorage.getItem("waths_arena_stats");
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return { nWins: 0, pWins: 0, ties: 0, totalMatches: 0 };
-}
-
 function saveWinStat(winner) {
-  const stats = getStoredStats();
-  stats.totalMatches++;
-  if (winner === "N Waths") stats.nWins++;
-  else if (winner === "P Waths") stats.pWins++;
-  else stats.ties++;
-
-  try {
-    localStorage.setItem("waths_arena_stats", JSON.stringify(stats));
-  } catch (e) {}
+  window.WathsArena.saveWinStat(STATS_KEY, winner);
   updateDropdownTelemetry();
 }
 
@@ -105,29 +89,12 @@ async function fetchBotInfo() {
 
 // Update telemetry in dropdown menus
 function updateDropdownTelemetry() {
-  const stats = getStoredStats();
-  const total = stats.totalMatches || 0;
-  const nRate = total > 0 ? Math.round((stats.nWins / total) * 100) : 0;
-  const pRate = total > 0 ? Math.round((stats.pWins / total) * 100) : 0;
-
-  const setSafe = (el, val) => { if (el) el.textContent = val; };
-
-  const nModel = window.WathsSettings ? window.WathsSettings.getBotConfig("N Waths").model : (STATE.botInfo["N Waths"]?.model || "stepfun-ai/step-5-preview");
-  const pModel = window.WathsSettings ? window.WathsSettings.getBotConfig("P Waths").model : (STATE.botInfo["P Waths"]?.model || "meta-llama/llama-3.2-3b-instruct");
-
-  setSafe(nProviderVal, STATE.botInfo["N Waths"]?.provider || "NVIDIA NIM");
-  setSafe(nModelVal, nModel);
-  setSafe(nWinsVal, `${stats.nWins} wins (${nRate}%)`);
-  setSafe(nPromptTokVal, STATE.nTokens.prompt.toLocaleString());
-  setSafe(nCompTokVal, STATE.nTokens.completion.toLocaleString());
-  setSafe(nTotalTokVal, STATE.nTokens.total.toLocaleString());
-
-  setSafe(pProviderVal, STATE.botInfo["P Waths"]?.provider || "OpenRouter");
-  setSafe(pModelVal, pModel);
-  setSafe(pWinsVal, `${stats.pWins} wins (${pRate}%)`);
-  setSafe(pPromptTokVal, STATE.pTokens.prompt.toLocaleString());
-  setSafe(pCompTokVal, STATE.pTokens.completion.toLocaleString());
-  setSafe(pTotalTokVal, STATE.pTokens.total.toLocaleString());
+  window.WathsArena.updateTelemetry({
+    storageKey: STATS_KEY,
+    botInfo: STATE.botInfo,
+    nTokens: STATE.nTokens,
+    pTokens: STATE.pTokens
+  });
 }
 
 window.addEventListener("waths-settings-updated", () => {
@@ -135,25 +102,7 @@ window.addEventListener("waths-settings-updated", () => {
 });
 
 // Dropdown toggle listeners
-nCard.addEventListener("click", (e) => {
-  e.stopPropagation();
-  nDropdown.classList.toggle("show");
-  pDropdown.classList.remove("show");
-});
-
-pCard.addEventListener("click", (e) => {
-  e.stopPropagation();
-  pDropdown.classList.toggle("show");
-  nDropdown.classList.remove("show");
-});
-
-// Close dropdown on outside click
-document.addEventListener("click", () => {
-  nDropdown.classList.remove("show");
-  pDropdown.classList.remove("show");
-});
-nDropdown.addEventListener("click", (e) => e.stopPropagation());
-pDropdown.addEventListener("click", (e) => e.stopPropagation());
+window.WathsArena.bindTelemetryDropdowns(nCard, pCard, nDropdown, pDropdown);
 
 // Topic Quick Pills
 quickTopicPills.forEach(pill => {
@@ -173,32 +122,11 @@ topicInput.addEventListener("input", () => {
 });
 
 // Message Limit Selection Logic (5, 10, 15, 20 or Custom)
-limitPills.forEach(pill => {
-  pill.addEventListener("click", () => {
-    if (STATE.isSimulating) return;
-    limitPills.forEach(p => p.classList.remove("active"));
-    pill.classList.add("active");
-    customLimitInput.value = "";
-    STATE.maxRounds = parseInt(pill.getAttribute("data-limit"), 10);
-    updateScoreboard();
-  });
-});
-
-customLimitInput.addEventListener("input", () => {
-  if (STATE.isSimulating) return;
-  let val = parseInt(customLimitInput.value, 10);
-  if (isNaN(val)) return;
-  if (val > 20) {
-    val = 20;
-    customLimitInput.value = "20";
-  }
-  if (val < 1) {
-    val = 1;
-    customLimitInput.value = "1";
-  }
-  limitPills.forEach(p => p.classList.remove("active"));
-  STATE.maxRounds = val;
-  updateScoreboard();
+window.WathsArena.bindLimitControls({
+  limitPills,
+  customLimitInput,
+  state: STATE,
+  onChange: updateScoreboard
 });
 
 // Buttons
@@ -218,91 +146,24 @@ topicInput.addEventListener("keydown", (e) => {
 });
 
 function updateScoreboard() {
-  nScoreEl.textContent = STATE.nScoreTotal;
-  pScoreEl.textContent = STATE.pScoreTotal;
-
-  const nAvg = STATE.nMsgsCount > 0 ? (STATE.nScoreTotal / STATE.nMsgsCount).toFixed(1) : "0.0";
-  const pAvg = STATE.pMsgsCount > 0 ? (STATE.pScoreTotal / STATE.pMsgsCount).toFixed(1) : "0.0";
-
-  nAvgEl.textContent = nAvg;
-  pAvgEl.textContent = pAvg;
-
-  nMsgsEl.textContent = `${STATE.nMsgsCount} / ${STATE.maxRounds} msgs`;
-  pMsgsEl.textContent = `${STATE.pMsgsCount} / ${STATE.maxRounds} msgs`;
-
-  if (STATE.nScoreTotal > STATE.pScoreTotal) {
-    leaderChip.textContent = `N Waths leads (+${STATE.nScoreTotal - STATE.pScoreTotal})`;
-    leaderChip.style.color = "var(--lime-primary)";
-  } else if (STATE.pScoreTotal > STATE.nScoreTotal) {
-    leaderChip.textContent = `P Waths leads (+${STATE.pScoreTotal - STATE.nScoreTotal})`;
-    leaderChip.style.color = "var(--sky-primary)";
-  } else {
-    leaderChip.textContent = `Tie (${STATE.nScoreTotal} - ${STATE.pScoreTotal})`;
-    leaderChip.style.color = "var(--text-muted)";
-  }
-
-  // Dynamic Arc Gauges update
-  const nScoreGauge = document.getElementById("nScoreGauge");
-  const pScoreGauge = document.getElementById("pScoreGauge");
-  const nAvgGauge = document.getElementById("nAvgGauge");
-  const pAvgGauge = document.getElementById("pAvgGauge");
-  const maxPossible = Math.max(1, (STATE.maxRounds || 20) * 10);
-  if (nScoreGauge) {
-    const pct = Math.max(5, Math.min(100, Math.round((STATE.nScoreTotal / maxPossible) * 100)));
-    nScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
-  }
-  if (pScoreGauge) {
-    const pct = Math.max(5, Math.min(100, Math.round((STATE.pScoreTotal / maxPossible) * 100)));
-    pScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
-  }
-  if (nAvgGauge) {
-    const pct = Math.max(5, Math.min(100, Math.round((parseFloat(nAvg) / 10) * 100)));
-    nAvgGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
-  }
-  if (pAvgGauge) {
-    const pct = Math.max(5, Math.min(100, Math.round((parseFloat(pAvg) / 10) * 100)));
-    pAvgGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
-  }
-
-  // Active turn glow
-  if (STATE.currentTurn === "N Waths") {
-    nCard.classList.add("active-turn");
-    pCard.classList.remove("active-turn");
-  } else if (STATE.currentTurn === "P Waths") {
-    pCard.classList.add("active-turn");
-    nCard.classList.remove("active-turn");
-  } else {
-    nCard.classList.remove("active-turn");
-    pCard.classList.remove("active-turn");
-  }
+  window.WathsArena.updateScoreboardUI({
+    state: STATE,
+    nScoreEl, pScoreEl, nAvgEl, pAvgEl,
+    nMsgsEl, pMsgsEl, leaderChip, nCard, pCard,
+    nLabel: "N Waths",
+    pLabel: "P Waths"
+  });
 }
 
 function checkConcedeCondition() {
-  const nRemaining = STATE.maxRounds - STATE.nMsgsCount;
-  const pRemaining = STATE.maxRounds - STATE.pMsgsCount;
-
-  const nMaxPossible = STATE.nScoreTotal + (nRemaining * 10);
-  const pMaxPossible = STATE.pScoreTotal + (pRemaining * 10);
-
-  // If N cannot possibly beat P anymore
-  if (nMaxPossible < STATE.pScoreTotal && STATE.nMsgsCount > 0) {
-    endSimulationWithConcede("N Waths", "P Waths");
-    return true;
-  }
-
-  // If P cannot possibly beat N anymore
-  if (pMaxPossible < STATE.nScoreTotal && STATE.pMsgsCount > 0) {
-    endSimulationWithConcede("P Waths", "N Waths");
-    return true;
-  }
-
-  // Both completed chosen max rounds
-  if (STATE.nMsgsCount >= STATE.maxRounds && STATE.pMsgsCount >= STATE.maxRounds) {
+  const res = window.WathsArena.evaluateMatchEnd(STATE);
+  if (!res.ended) return false;
+  if (res.type === "concede") {
+    endSimulationWithConcede(res.concedingBot, res.winningBot);
+  } else {
     endSimulationNormal();
-    return true;
   }
-
-  return false;
+  return true;
 }
 
 function endSimulationWithConcede(concedingBot, winningBot) {
@@ -397,11 +258,7 @@ function stopSimulationMidway() {
 }
 
 function appendSystemBanner(text, type = "normal") {
-  const pill = document.createElement("div");
-  pill.className = `system-pill ${type}`;
-  pill.textContent = text;
-  chatFeed.appendChild(pill);
-  chatViewport.scrollTop = chatViewport.scrollHeight;
+  window.WathsArena.appendSystemBanner(chatFeed, chatViewport, text, type);
 }
 
 function startSimulation() {
@@ -413,7 +270,6 @@ function startSimulation() {
   }
 
   STATE.topic = topic;
-  STATE.round = 1;
   STATE.nScoreTotal = 0;
   STATE.pScoreTotal = 0;
   STATE.nMsgsCount = 0;
@@ -440,7 +296,6 @@ function startSimulation() {
 
 function resetSimulation() {
   STATE.topic = "";
-  STATE.round = 0;
   STATE.nScoreTotal = 0;
   STATE.pScoreTotal = 0;
   STATE.nMsgsCount = 0;
@@ -669,12 +524,7 @@ function recordScore(bot, score, bubbleEl) {
 }
 
 function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return window.WathsArena.escapeHtml(str);
 }
 
 // Initial telemetry fetch
