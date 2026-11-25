@@ -195,13 +195,25 @@ if (toggleBriefingBtn) {
 
 const nRoleBtn = document.getElementById("nRoleContextBtn");
 const pRoleBtn = document.getElementById("pRoleContextBtn");
-const openDrawer = () => {
+const openDrawer = (e) => {
+  e.stopPropagation();
   if (masterContent) masterContent.classList.add("open");
   const pill = document.getElementById("masterSwitchPill");
   if (pill) pill.classList.add("active");
 };
 if (nRoleBtn) nRoleBtn.addEventListener("click", openDrawer);
 if (pRoleBtn) pRoleBtn.addEventListener("click", openDrawer);
+
+function syncCharacterBadges() {
+  const nVal = (nCharInput ? nCharInput.value.trim() : "") || "N";
+  const pVal = (pCharInput ? pCharInput.value.trim() : "") || "P";
+  setText("nCapsuleInitial", nVal.charAt(0).toUpperCase());
+  setText("pCapsuleInitial", pVal.charAt(0).toUpperCase());
+  setText(nCharSubtext, nCharInput && nCharInput.value.trim() ? nCharInput.value.trim() : "N Actor");
+  setText(pCharSubtext, pCharInput && pCharInput.value.trim() ? pCharInput.value.trim() : "P Actor");
+}
+if (nCharInput) nCharInput.addEventListener("input", syncCharacterBadges);
+if (pCharInput) pCharInput.addEventListener("input", syncCharacterBadges);
 
 const clearScenarioBtn = document.getElementById("clearScenarioBtn");
 if (clearScenarioBtn && scenarioInput) {
@@ -223,6 +235,7 @@ presetPills.forEach(pill => {
     pCharInput.value = pill.getAttribute("data-p");
     scenarioInput.value = pill.getAttribute("data-scenario");
     if (clearScenarioBtn) clearScenarioBtn.style.display = "inline-block";
+    syncCharacterBadges();
   });
 });
 
@@ -477,14 +490,14 @@ async function summonMasterAndStart() {
   STATE.nMsgsCount = 0;
   STATE.pMsgsCount = 0;
   STATE.lastMessage = "";
+  STATE.sessionMemory = "";
   STATE.isSimulating = true;
   STATE.isFinished = false;
   STATE.activeAwaitingScore = false;
   STATE.currentTurn = "N Waths";
 
   // Update card subtexts with character personas
-  setText(nCharSubtext, `Role: ${nChar}`);
-  setText(pCharSubtext, `Role: ${pChar}`);
+  syncCharacterBadges();
 
   // Disable controls during initialization
   if (nCharInput) nCharInput.disabled = true;
@@ -516,6 +529,9 @@ async function summonMasterAndStart() {
     if (data.error) {
       appendSystemBanner(`⚠️ Arena Master Error: ${data.error}`, "error");
       setText(turnStatus, "Arena Master failed to generate briefing.");
+      STATE.isSimulating = false;
+      STATE.currentTurn = null;
+      if (stopBtn) stopBtn.disabled = true;
       if (startBtn) startBtn.disabled = false;
       if (nCharInput) nCharInput.disabled = false;
       if (pCharInput) pCharInput.disabled = false;
@@ -524,11 +540,20 @@ async function summonMasterAndStart() {
     }
 
     STATE.briefing = data.briefing;
+    if (data.tokens) {
+      STATE.masterTokens.prompt += data.tokens.prompt || 0;
+      STATE.masterTokens.completion += data.tokens.completion || 0;
+      STATE.masterTokens.total += data.tokens.total || 0;
+    }
+    if (STATE.briefing?.first_speaker === "P Waths") {
+      STATE.currentTurn = "P Waths";
+    }
 
     // Display compact briefing strip (collapsed drawer by default to maximize chat space)
-    if (masterBriefingCard) masterBriefingCard.style.display = "block";
-    if (masterContent) masterContent.style.display = "none";
-    setText(toggleBriefingBtn, "Roles ▾");
+    if (masterBriefingCard) masterBriefingCard.style.display = "flex";
+    if (masterContent) masterContent.classList.remove("open");
+    const switchPill = document.getElementById("masterSwitchPill");
+    if (switchPill) switchPill.classList.remove("active");
     setText(briefScenario, STATE.briefing?.scenario_summary || scenario || "Confrontation setting");
     setText(briefNRole, STATE.briefing?.n_role_context || `${nChar} persona`);
     setText(briefPRole, STATE.briefing?.p_role_context || `${pChar} persona`);
@@ -542,6 +567,9 @@ async function summonMasterAndStart() {
   } catch (err) {
     appendSystemBanner(`⚠️ Network error calling Arena Master: ${err.message}`, "error");
     setText(turnStatus, "Error reaching server.");
+    STATE.isSimulating = false;
+    STATE.currentTurn = null;
+    if (stopBtn) stopBtn.disabled = true;
     if (startBtn) startBtn.disabled = false;
     if (nCharInput) nCharInput.disabled = false;
     if (pCharInput) pCharInput.disabled = false;
