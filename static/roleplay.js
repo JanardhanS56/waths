@@ -272,8 +272,8 @@ function updateScoreboard() {
   const nAvg = STATE.nMsgsCount > 0 ? (STATE.nScoreTotal / STATE.nMsgsCount).toFixed(1) : "0.0";
   const pAvg = STATE.pMsgsCount > 0 ? (STATE.pScoreTotal / STATE.pMsgsCount).toFixed(1) : "0.0";
 
-  setText(nAvgEl, `Avg: ${nAvg}`);
-  setText(pAvgEl, `Avg: ${pAvg}`);
+  setText(nAvgEl, nAvg);
+  setText(pAvgEl, pAvg);
 
   setText(nMsgsEl, `${STATE.nMsgsCount} / ${STATE.maxRounds} msgs`);
   setText(pMsgsEl, `${STATE.pMsgsCount} / ${STATE.maxRounds} msgs`);
@@ -292,6 +292,8 @@ function updateScoreboard() {
   // Dynamic Arc Gauges update
   const nScoreGauge = document.getElementById("nScoreGauge");
   const pScoreGauge = document.getElementById("pScoreGauge");
+  const nAvgGauge = document.getElementById("nAvgGauge");
+  const pAvgGauge = document.getElementById("pAvgGauge");
   const maxPossible = Math.max(1, (STATE.maxRounds || 20) * 10);
   if (nScoreGauge) {
     const pct = Math.max(5, Math.min(100, Math.round((STATE.nScoreTotal / maxPossible) * 100)));
@@ -300,6 +302,14 @@ function updateScoreboard() {
   if (pScoreGauge) {
     const pct = Math.max(5, Math.min(100, Math.round((STATE.pScoreTotal / maxPossible) * 100)));
     pScoreGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
+  }
+  if (nAvgGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((parseFloat(nAvg) / 10) * 100)));
+    nAvgGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
+  }
+  if (pAvgGauge) {
+    const pct = Math.max(5, Math.min(100, Math.round((parseFloat(pAvg) / 10) * 100)));
+    pAvgGauge.setAttribute("stroke-dasharray", `${pct}, 100`);
   }
 
   // Active turn glow

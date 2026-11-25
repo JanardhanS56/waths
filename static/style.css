@@ -911,6 +911,14 @@ body {
   gap: 8px;
 }
 
+.gauge-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
 .gauge-circle-outer {
   width: 44px;
   height: 44px;
@@ -1302,6 +1310,16 @@ body {
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+
+.ribbon-status {
+  font-size: 11px;
+  color: var(--text-2);
+  flex: 1;
+  margin: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ribbon-right-controls {

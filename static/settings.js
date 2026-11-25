@@ -60,16 +60,13 @@
   }
 
   function updateNavBadges() {
-    const memEl = document.getElementById("navMemVal");
-    const limitEl = document.getElementById("navLimitVal");
-    if (memEl) memEl.textContent = `${currentSettings.n.memory_limit}c`;
-    if (limitEl) limitEl.textContent = `≤ ${currentSettings.n.max_chars}c`;
-
-    // Also update card gauges
+    // Update card memory gauges and rings
     const nMemG = document.getElementById("nMemGaugeVal");
     const pMemG = document.getElementById("pMemGaugeVal");
     if (nMemG) nMemG.textContent = currentSettings.n.memory_limit;
     if (pMemG) pMemG.textContent = currentSettings.p.memory_limit;
+    updateGaugeRing("nMemGauge", (currentSettings.n.memory_limit / 2000) * 100);
+    updateGaugeRing("pMemGauge", (currentSettings.p.memory_limit / 2000) * 100);
   }
 
   function updateGaugeRing(svgId, percentage) {
