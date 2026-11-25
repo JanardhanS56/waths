@@ -483,6 +483,8 @@ async function summonMasterAndStart() {
   if (startBtn) startBtn.disabled = true;
   if (stopBtn) stopBtn.disabled = false;
   if (chatFeed) chatFeed.innerHTML = "";
+  const archedDocket = document.getElementById("archedDocket");
+  if (archedDocket) archedDocket.style.display = "none";
 
   setText(turnStatus, "Arena Master (Groq GPT) is formulating neutral briefing...");
   setText(ribbonStatus, "Generating roleplay directives...");
@@ -559,45 +561,16 @@ function resetSimulation() {
   if (masterBriefingCard) masterBriefingCard.style.display = "none";
 
   if (chatFeed) {
-    chatFeed.innerHTML = `
-      <div class="welcome-banner compact-welcome">
-        <div class="docket-header">
-          <span class="docket-status-tag">ROLEPLAY DOCKET</span>
-          <span class="docket-id">EVAL-DIRECTIVE // STANDBY</span>
-        </div>
-        <div class="docket-body">
-          <div class="docket-main">
-            <h3>Persona Fidelity & Scenario Duel</h3>
-            <p>Groq GPT serves as the impartial Arena Master, formulating balanced character briefs and staging the scene. Both actors must remain strictly in-character without breaking persona or leaking chain-of-thought planning.</p>
-          </div>
-          <div class="docket-specs-grid">
-            <div class="spec-block">
-              <span class="spec-k">MASTER REFEREE</span>
-              <span class="spec-v">Groq (GPT-OSS 120B)</span>
-            </div>
-            <div class="spec-block">
-              <span class="spec-k">EVALUATION</span>
-              <span class="spec-v">Fidelity Score (1-10)</span>
-            </div>
-            <div class="spec-block">
-              <span class="spec-k">CHAR CAP</span>
-              <span class="spec-v">≤ 200 characters</span>
-            </div>
-            <div class="spec-block">
-              <span class="spec-k">MEMORY STATE</span>
-              <span class="spec-v">In-session isolated</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    chatFeed.innerHTML = "";
   }
+  const archedDocket = document.getElementById("archedDocket");
+  if (archedDocket) archedDocket.style.display = "";
 
-  setText(roundIndicator, "Ready to Roleplay");
-  setText(turnStatus, "Configure characters and click Summon Master");
+  setText(roundIndicator, "READY");
+  setText(turnStatus, "Configure characters and click Start");
   setText(leaderChip, "Tie (0 - 0)");
   if (leaderChip) leaderChip.style.color = "var(--text-muted)";
-  setText(ribbonStatus, "Configure characters to begin roleplay duel...");
+  setText(ribbonStatus, "Ready");
   updateScoreboard();
 }
 
@@ -734,7 +707,7 @@ function renderRoleplayMessage(bot, charName, text, maxChars = 200) {
       </span>
     </div>
     <div class="msg-text">${escapeHtml(text)}</div>
-    <div class="rating-area" id="ratingArea">
+    <div class="rating-area">
       <div class="rating-prompt">
         <span>Rate role authenticity & depth (1 - 10):</span>
       </div>
