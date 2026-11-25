@@ -141,9 +141,21 @@ def test_bot_turn_truncation_and_http_error(client, monkeypatch):
         code=429,
         msg="Too Many Requests",
         hdrs=None,
-        fp=io.BytesIO(b"rate limit"),
+        fp=io.BytesIO(json.dumps({"error": {"message": "Provider returned error", "metadata": {"raw": "temporarily rate-limited upstream"}}}).encode("utf-8")),
     )
-    with patch("urllib.request.urlopen", side_effect=http_err):
+    with patch("time.sleep"), patch("urllib.request.urlopen", side_effect=[http_err, _FakeResponse({"choices": [{"message": {"content": "Recovered!"}}], "usage": {}})]):
+        ok_res = client.post("/api/bot-turn", json={"bot": "P Waths", "topic": "AI"})
+    assert ok_res.status_code == 200
+    assert ok_res.get_json()["text"] == "Recovered!"
+
+    http_err_final = urllib.error.HTTPError(
+        url="https://openrouter.ai/api/v1/chat/completions",
+        code=429,
+        msg="Too Many Requests",
+        hdrs=None,
+        fp=io.BytesIO(json.dumps({"error": {"message": "Provider returned error", "metadata": {"raw": "temporarily rate-limited upstream"}}}).encode("utf-8")),
+    )
+    with patch("time.sleep"), patch("urllib.request.urlopen", side_effect=http_err_final):
         err_res = client.post("/api/bot-turn", json={"bot": "P Waths", "topic": "AI"})
-    assert err_res.status_code == 502
-    assert "429" in err_res.get_json()["error"]
+    assert err_res.status_code == 429
+    assert "temporarily rate-limited upstream" in err_res.get_json()["error"]

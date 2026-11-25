@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import json
 import urllib.request
 import urllib.error
@@ -69,51 +70,80 @@ def call_arena_master(n_character, p_character, scenario):
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=20) as res:
-            data = json.loads(res.read())
-            msg = data["choices"][0]["message"]
-            raw_content = (msg.get("content") or "").strip()
-            # If content is empty, check reasoning as fallback
-            if not raw_content and msg.get("reasoning"):
-                raw_content = msg.get("reasoning").strip()
+        data = _urlopen_with_retry(req, timeout=20)
+        msg = data["choices"][0]["message"]
+        raw_content = (msg.get("content") or "").strip()
+        # If content is empty, check reasoning as fallback
+        if not raw_content and msg.get("reasoning"):
+            raw_content = msg.get("reasoning").strip()
 
-            clean_str = raw_content
-            if "```json" in clean_str:
-                clean_str = clean_str.split("```json")[1].split("```")[0].strip()
-            elif "```" in clean_str:
-                clean_str = clean_str.split("```")[1].split("```")[0].strip()
+        clean_str = raw_content
+        if "```json" in clean_str:
+            clean_str = clean_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in clean_str:
+            clean_str = clean_str.split("```")[1].split("```")[0].strip()
 
-            fb = clean_str.find("{")
-            lb = clean_str.rfind("}")
-            if fb != -1 and lb != -1:
-                clean_str = clean_str[fb:lb+1]
+        fb = clean_str.find("{")
+        lb = clean_str.rfind("}")
+        if fb != -1 and lb != -1:
+            clean_str = clean_str[fb:lb+1]
 
-            try:
-                briefing = json.loads(clean_str)
-            except Exception:
-                briefing = {
-                    "scenario_summary": (scenario or f"A high-stakes confrontation between {n_character} and {p_character}.")[:190],
-                    "n_role_context": f"Embody {n_character} with conviction, distinct personality, and tactical motives."[:190],
-                    "p_role_context": f"Embody {p_character} with sharp wits, unyielding persona, and counter-tactics."[:190],
-                    "first_speaker": "N Waths"
-                }
-
-            usage = data.get("usage", {})
-            return {
-                "briefing": briefing,
-                "model": GROQ_MODEL,
-                "provider": "Groq",
-                "tokens": {
-                    "prompt": usage.get("prompt_tokens", 0),
-                    "completion": usage.get("completion_tokens", 0),
-                    "total": usage.get("total_tokens", 0)
-                }
+        try:
+            briefing = json.loads(clean_str)
+        except Exception:
+            briefing = {
+                "scenario_summary": (scenario or f"A high-stakes confrontation between {n_character} and {p_character}.")[:190],
+                "n_role_context": f"Embody {n_character} with conviction, distinct personality, and tactical motives."[:190],
+                "p_role_context": f"Embody {p_character} with sharp wits, unyielding persona, and counter-tactics."[:190],
+                "first_speaker": "N Waths"
             }
+
+        usage = data.get("usage", {})
+        return {
+            "briefing": briefing,
+            "model": GROQ_MODEL,
+            "provider": "Groq",
+            "tokens": {
+                "prompt": usage.get("prompt_tokens", 0),
+                "completion": usage.get("completion_tokens", 0),
+                "total": usage.get("total_tokens", 0)
+            }
+        }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"Groq Arena Master Error {e.code}: {error_body}", "status_code": 502}
+        detail = _extract_api_error(error_body)
+        return {"error": f"Groq Arena Master Error {e.code}: {detail}", "status_code": 429 if e.code == 429 else 502}
     except Exception as e:
         return {"error": f"Groq Connection Error: {str(e)}", "status_code": 502}
+
+
+def _extract_api_error(error_body):
+    try:
+        parsed = json.loads(error_body)
+        err = parsed.get("error", parsed)
+        if isinstance(err, dict):
+            meta_raw = (err.get("metadata") or {}).get("raw")
+            return meta_raw or err.get("message") or error_body
+        return str(err)
+    except Exception:
+        return error_body
+
+
+def _urlopen_with_retry(req, timeout=90, retries=2, backoff=1.5):
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as res:
+                return json.loads(res.read())
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503) and attempt < retries:
+                retry_after = e.headers.get("Retry-After") if e.headers else None
+                try:
+                    delay = min(5.0, float(retry_after)) if retry_after else backoff * (attempt + 1)
+                except (ValueError, TypeError):
+                    delay = backoff * (attempt + 1)
+                time.sleep(delay)
+                continue
+            raise
 
 
 def _clamp_num(value, default, cast_fn, min_val, max_val):
@@ -235,34 +265,39 @@ def _call_openai_compat(
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=90) as res:
-            data = json.loads(res.read())
-            choice = data["choices"][0]["message"]
-            content = choice.get("content") or ""
-            if "</think>" in content:
-                content = content.split("</think>")[-1].strip()
-            content = content.strip().strip('"')
-            if not content and choice.get("reasoning_content"):
-                quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
-                if quotes:
-                    content = quotes[-1].strip()
-            if len(content) > cfg["max_chars"]:
-                content = content[: cfg["max_chars"] - 3] + "..."
-            usage = data.get("usage", {})
-            return {
-                "text": content,
-                "raw_length": len(content),
-                "model": cfg["model"],
-                "provider": provider_name,
-                "tokens": {
-                    "prompt": usage.get("prompt_tokens", 0),
-                    "completion": usage.get("completion_tokens", 0),
-                    "total": usage.get("total_tokens", 0),
-                },
-            }
+        data = _urlopen_with_retry(req, timeout=90)
+        choice = data["choices"][0]["message"]
+        content = choice.get("content") or ""
+        if "</think>" in content:
+            content = content.split("</think>")[-1].strip()
+        content = content.strip().strip('"')
+        if not content and choice.get("reasoning_content"):
+            quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
+            if quotes:
+                content = quotes[-1].strip()
+        if len(content) > cfg["max_chars"]:
+            content = content[: cfg["max_chars"] - 3] + "..."
+        usage = data.get("usage", {})
+        return {
+            "text": content,
+            "raw_length": len(content),
+            "model": cfg["model"],
+            "provider": provider_name,
+            "tokens": {
+                "prompt": usage.get("prompt_tokens", 0),
+                "completion": usage.get("completion_tokens", 0),
+                "total": usage.get("total_tokens", 0),
+            },
+        }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"{provider_name} API Error {e.code}: {error_body}", "status_code": 502}
+        detail = _extract_api_error(error_body)
+        if e.code == 429:
+            return {
+                "error": f"{provider_name} rate-limited (429) on {cfg['model']}: {detail} Click 'Next Turn' to retry or switch model in Settings.",
+                "status_code": 429,
+            }
+        return {"error": f"{provider_name} API Error {e.code}: {detail}", "status_code": 502}
     except Exception as e:
         return {"error": f"{provider_name} Connection Error: {str(e)}", "status_code": 502}
 
