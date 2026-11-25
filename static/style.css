@@ -984,6 +984,42 @@ body {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
+/* Telemetry Dropdown inside Actor Card */
+.telemetry-dropdown {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--bg-inset);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+.telemetry-dropdown.show {
+  display: flex;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.telemetry-row span:last-child {
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
 /* Center Stage Viewport (Chat feed + bottom arched docket) */
 .center-chat-viewport {
   display: flex;
