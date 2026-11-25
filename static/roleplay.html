@@ -79,8 +79,9 @@
         <div class="scenario-capsule">
           <span class="scenario-search-icon">🔍</span>
           <input type="text" id="scenarioInput" class="scenario-capsule-input"
+            value="Quiet Tokyo coffee shop, testing each other with veiled deductions"
             placeholder="Scenario / Setting (e.g. Quiet coffee shop in Tokyo)..." maxlength="150" />
-          <button class="scenario-clear-btn" id="clearScenarioBtn">✕</button>
+          <button class="scenario-clear-btn" id="clearScenarioBtn" style="display:inline-block;">✕</button>
         </div>
       </div>
 
@@ -168,7 +169,7 @@
 
           <div class="user-card-snippet">
             <div class="mini-avatar">N</div>
-            <span class="snippet-text">N Waths User Card</span>
+            <span class="snippet-text" id="nProfileSnippet">step-5-preview</span>
           </div>
 
           <!-- Vertical Arc Gauges Stack -->
@@ -225,7 +226,15 @@
       <!-- Center Chat Stream Area -->
       <section class="center-chat-viewport" id="chatViewport">
         <div class="chat-feed-stream" id="chatFeed">
-          <!-- Initial Welcome Feed State -->
+          <div class="idle-stage-card">
+            <span class="idle-stage-badge">Roleplay Arena // Ready</span>
+            <h3>In-Character Persona Duel</h3>
+            <p>Choose a preset or customize both actors and scenario, then click <strong>START ▶</strong> to summon the Groq Arena Master.</p>
+            <div class="idle-stage-hints">
+              <span>Keys 1–0: Fidelity Score</span>
+              <span>Esc: Close Settings</span>
+            </div>
+          </div>
         </div>
 
         <!-- Arched Bottom Docket Overlay (Matching Image 1) -->
@@ -242,7 +251,7 @@
             </div>
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">▤</span>
-              <span><strong>≤ 200</strong> char</span>
+              <span><strong id="docketCharCap">≤ 200</strong> char</span>
             </div>
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">🛡</span>
@@ -267,6 +276,11 @@
               </div>
             </div>
             <span class="msgs-count-pill" id="pMsgs">0 msgs</span>
+          </div>
+
+          <div class="user-card-snippet">
+            <div class="mini-avatar p-mini">P</div>
+            <span class="snippet-text" id="pProfileSnippet">llama-3.2-3b-instruct</span>
           </div>
 
           <!-- Vertical Arc Gauges Stack -->

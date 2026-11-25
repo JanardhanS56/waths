@@ -117,7 +117,7 @@
 
           <div class="user-card-snippet">
             <div class="mini-avatar">N</div>
-            <span class="snippet-text">N Waths Active Profile</span>
+            <span class="snippet-text" id="nProfileSnippet">step-5-preview</span>
           </div>
 
           <!-- Vertical Arc Gauges Stack -->
@@ -167,7 +167,15 @@
       <!-- Center Chat Stream Area -->
       <section class="center-chat-viewport" id="chatViewport">
         <div class="chat-feed-stream" id="chatFeed">
-          <!-- Initial Welcome Feed State -->
+          <div class="idle-stage-card">
+            <span class="idle-stage-badge">Dialogue Arena // Ready</span>
+            <h3>Synchronous Head-to-Head Debate</h3>
+            <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+            <div class="idle-stage-hints">
+              <span>Keys 1–0: Quick Score</span>
+              <span>Esc: Close Settings</span>
+            </div>
+          </div>
         </div>
 
         <!-- Arched Bottom Docket Overlay -->
@@ -176,19 +184,19 @@
           <div class="docket-specs-pill-row">
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">N</span>
-              <span><strong>NVIDIA</strong> NIM (Stepfun)</span>
+              <span><strong>NVIDIA</strong> <span id="docketNModel">step-5-preview</span></span>
             </div>
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">P</span>
-              <span><strong>OpenRouter</strong> (Llama 3.2)</span>
+              <span><strong>OpenRouter</strong> <span id="docketPModel">llama-3.2-3b-instruct</span></span>
             </div>
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">▤</span>
-              <span><strong>≤ 200</strong> char</span>
+              <span><strong id="docketCharCap">≤ 200</strong> char</span>
             </div>
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">🛡</span>
-              <span>500c <strong>rolling memory</strong></span>
+              <span><strong id="docketMemCap">500c</strong> rolling memory</span>
             </div>
           </div>
         </div>
@@ -209,6 +217,11 @@
               </div>
             </div>
             <span class="msgs-count-pill" id="pMsgs">0 msgs</span>
+          </div>
+
+          <div class="user-card-snippet">
+            <div class="mini-avatar p-mini">P</div>
+            <span class="snippet-text" id="pProfileSnippet">llama-3.2-3b-instruct</span>
           </div>
 
           <!-- Vertical Arc Gauges Stack -->

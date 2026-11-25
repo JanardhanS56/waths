@@ -546,13 +546,13 @@ body {
 }
 
 .custom-limit-input {
-  width: 52px;
+  width: 72px;
   background: var(--bg-inset);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
   color: var(--text-1);
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   text-align: center;
   outline: none;
 }
@@ -781,6 +781,16 @@ body {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
+.actor-stage-card.n-stage-card.active-turn {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.35);
+}
+
+.actor-stage-card.p-stage-card.active-turn {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 22px rgba(148, 163, 184, 0.3);
+}
+
 .card-orbit-header {
   display: flex;
   align-items: center;
@@ -887,13 +897,24 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 11px;
+  font-weight: 700;
   color: var(--gold-primary);
+  flex-shrink: 0;
+}
+
+.mini-avatar.p-mini {
+  background: #141922;
+  border-color: #94a3b8;
+  color: #cbd5e1;
 }
 
 .snippet-text {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Radial Arc Gauges Column */
@@ -901,14 +922,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-end;
+  width: 100%;
   margin-bottom: 12px;
 }
 
 .gauge-row-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg-inset);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
 }
 
 .gauge-label {
@@ -1050,6 +1076,65 @@ body {
 .chat-feed-stream::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
+}
+
+/* Centered Idle Stage Card */
+.idle-stage-card {
+  margin: auto;
+  max-width: 440px;
+  text-align: center;
+  background: var(--bg-card-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.idle-stage-badge {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--gold-primary);
+  background: var(--gold-bg-subtle);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+}
+
+.idle-stage-card h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.idle-stage-card p {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.idle-stage-hints {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.idle-stage-hints span {
+  background: var(--bg-inset);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
 }
 
 /* Dialogue Speech Bubbles */
