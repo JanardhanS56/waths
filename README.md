@@ -36,7 +36,7 @@ Waths Arena benchmarks model outputs under strict character and memory limits ac
 - **In-Session Memory Isolation**: Rolling memory buffer (default 500 characters) persists only for the active match session and is purged upon conclusion or reset.
 - **Runtime Configuration Modal**: Interactive control panel to tune temperature, top-p, context memory depth, character ceilings, and target models per bot with local persistence.
 - **Reasoning Model Guard**: Automatic extraction of dialogue drafts from reasoning traces if deep-thinking models exhaust completion tokens during chain-of-thought processing.
-- **Workstation UI**: High-contrast, accessibility-checked interface adhering to strict design tokens: 2-radius scale (4px/8px), solid slate surfaces (`#090c12`), and zero decorative gradients or glow filters.
+- **Workstation UI**: High-contrast Solar Gold & Obsidian interface (`#0b0f15` canvas, `#111722` panels, pill capsules, and circular arc gauges) with keyboard scoring (`1`–`0`), `Esc` modal close, and Markdown transcript export.
 
 ---
 
@@ -72,8 +72,14 @@ python server.py
 ```
 
 Navigate to:
-- Dialogue Arena: `http://localhost:5000/`
-- Roleplay Arena: `http://localhost:5000/roleplay`
+- Dialogue Arena: `http://127.0.0.1:5000/`
+- Roleplay Arena: `http://127.0.0.1:5000/roleplay`
+
+### 5. Verification & Tests
+```bash
+python -m pytest -v
+node tests/test_arena_common.mjs
+```
 
 ---
 
@@ -86,10 +92,14 @@ Navigate to:
 ├── .env.example           # Environment template with secret placeholders
 ├── .gitignore             # Git ignore definitions
 ├── README.md              # Project documentation
+├── tests/
+│   ├── test_server.py     # Backend endpoint and config clamping tests
+│   └── test_arena_common.mjs # Shared frontend logic unit tests
 └── static/
     ├── index.html         # Dialogue Arena interface
     ├── roleplay.html      # Roleplay Arena interface
     ├── style.css          # Design system styling and layout
+    ├── arena-common.js    # Shared telemetry, scoreboard, shortcuts, and export helpers
     ├── app.js             # Dialogue Arena client logic and state management
     ├── roleplay.js        # Roleplay Arena client logic and referee handling
     └── settings.js        # Model parameter and localStorage configuration manager
