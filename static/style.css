@@ -546,13 +546,13 @@ body {
 }
 
 .custom-limit-input {
-  width: 52px;
+  width: 72px;
   background: var(--bg-inset);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
   color: var(--text-1);
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   text-align: center;
   outline: none;
 }
@@ -781,6 +781,16 @@ body {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
+.actor-stage-card.n-stage-card.active-turn {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.35);
+}
+
+.actor-stage-card.p-stage-card.active-turn {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 22px rgba(148, 163, 184, 0.3);
+}
+
 .card-orbit-header {
   display: flex;
   align-items: center;
@@ -901,14 +911,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: flex-end;
+  width: 100%;
   margin-bottom: 12px;
 }
 
 .gauge-row-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg-inset);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
 }
 
 .gauge-label {
