@@ -69,6 +69,7 @@ const turnStatus = document.getElementById("turnStatus");
 const leaderChip = document.getElementById("leaderChip");
 const ribbonStatus = document.getElementById("ribbonStatus");
 const nextTurnBtn = document.getElementById("nextTurnBtn");
+const exportBtn = document.getElementById("exportBtn");
 const autoAdvanceToggle = document.getElementById("autoAdvanceToggle");
 const presetPills = document.querySelectorAll(".preset-pill");
 const limitPills = document.querySelectorAll(".limit-pill");
@@ -106,6 +107,7 @@ async function fetchBotInfo() {
       if (data["N Waths"]) STATE.botInfo["N Waths"] = data["N Waths"];
       if (data["P Waths"]) STATE.botInfo["P Waths"] = data["P Waths"];
       if (data["Arena Master"]) STATE.botInfo["Arena Master"] = data["Arena Master"];
+      window.WathsArena.checkApiKeyReadiness(STATE.botInfo, turnStatus);
     }
   } catch (e) {}
   updateDropdownTelemetry();
@@ -204,6 +206,12 @@ nextTurnBtn.addEventListener("click", () => {
     executeNextTurn();
   }
 });
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    window.WathsArena.exportTranscript(chatFeed, "waths-roleplay", `Roleplay Benchmark: ${STATE.nChar} vs ${STATE.pChar}`);
+  });
+}
+window.WathsArena.bindScoringShortcuts(() => STATE.activeAwaitingScore, chatFeed);
 
 function updateScoreboard() {
   window.WathsArena.updateScoreboardUI({
@@ -301,6 +309,7 @@ function stopSimulationMidway() {
 
   if (stopBtn) stopBtn.disabled = true;
   if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (exportBtn) exportBtn.disabled = true;
   if (startBtn) startBtn.disabled = false;
   if (nCharInput) nCharInput.disabled = false;
   if (pCharInput) pCharInput.disabled = false;
@@ -453,6 +462,7 @@ function resetSimulation() {
   if (startBtn) startBtn.disabled = false;
   if (stopBtn) stopBtn.disabled = true;
   if (nextTurnBtn) nextTurnBtn.disabled = true;
+  if (exportBtn) exportBtn.disabled = true;
   if (masterBriefingCard) masterBriefingCard.style.display = "none";
 
   if (chatFeed) {
@@ -615,6 +625,7 @@ function renderRoleplayMessage(bot, charName, text, maxChars = 200) {
   row.appendChild(bubble);
   chatFeed.appendChild(row);
   chatViewport.scrollTop = chatViewport.scrollHeight;
+  if (exportBtn) exportBtn.disabled = false;
 
   STATE.activeAwaitingScore = true;
   setText(turnStatus, `Score ${charName}'s roleplay fidelity (1-10)`);

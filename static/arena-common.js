@@ -189,6 +189,55 @@
     return { ended: false };
   }
 
+  function bindScoringShortcuts(isAwaitingScoreFn, chatFeed) {
+    document.addEventListener("keydown", (e) => {
+      if (!isAwaitingScoreFn() || !chatFeed) return;
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const score = e.key === "0" ? "10" : (/^[1-9]$/.test(e.key) ? e.key : null);
+      if (!score) return;
+      const btns = chatFeed.querySelectorAll(`.score-btn[data-score="${score}"]`);
+      if (btns.length > 0) {
+        btns[btns.length - 1].click();
+      }
+    });
+  }
+
+  function exportTranscript(chatFeed, filenamePrefix, metaTitle) {
+    if (!chatFeed) return;
+    const lines = [`# ${metaTitle}`, ""];
+    chatFeed.querySelectorAll(".msg-row, .system-pill").forEach(el => {
+      if (el.classList.contains("system-pill")) {
+        lines.push(`> ${el.textContent.trim()}`, "");
+        return;
+      }
+      const author = el.querySelector(".msg-author")?.textContent.trim() || "Actor";
+      const body = el.querySelector(".msg-text")?.textContent.trim() || "";
+      const rated = el.querySelector(".rated-pill")?.textContent.trim() || "";
+      lines.push(`**${author}**: ${body}`);
+      if (rated) lines.push(`_${rated}_`);
+      lines.push("");
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${filenamePrefix}-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function checkApiKeyReadiness(botInfo, turnStatusEl) {
+    const missing = Object.entries(botInfo || {})
+      .filter(([, info]) => info && info.has_key === false)
+      .map(([name]) => name);
+    if (missing.length > 0 && turnStatusEl) {
+      turnStatusEl.textContent = `Missing API key in .env for: ${missing.join(", ")}`;
+    }
+  }
+
   window.WathsArena = {
     setText,
     escapeHtml,
@@ -199,6 +248,9 @@
     bindLimitControls,
     appendSystemBanner,
     updateScoreboardUI,
-    evaluateMatchEnd
+    evaluateMatchEnd,
+    bindScoringShortcuts,
+    exportTranscript,
+    checkApiKeyReadiness
   };
 })();
