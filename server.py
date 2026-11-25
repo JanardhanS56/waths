@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import urllib.request
 import urllib.error
@@ -28,7 +29,7 @@ GROQ_MODEL = os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b')
 def call_arena_master(n_character, p_character, scenario):
     """Arena Master powered by Groq (GPT-OSS) to generate neutral roleplay briefing JSON."""
     if not GROQ_API_KEY:
-        return {"error": "GROQ_API_KEY missing in .env"}
+        return {"error": "GROQ_API_KEY missing in .env", "status_code": 503}
 
     system_prompt = (
         "SYSTEM IDENTITY: You are the neutral, fair Arena Master presiding over a roleplay duel between two actors: "
@@ -110,43 +111,38 @@ def call_arena_master(n_character, p_character, scenario):
             }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"Groq Arena Master Error {e.code}: {error_body}"}
+        return {"error": f"Groq Arena Master Error {e.code}: {error_body}", "status_code": 502}
     except Exception as e:
-        return {"error": f"Groq Connection Error: {str(e)}"}
+        return {"error": f"Groq Connection Error: {str(e)}", "status_code": 502}
 
-def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=None, config=None):
-    if not NVIDIA_API_KEY:
-        return {"error": "NVIDIA_API_KEY missing in .env"}
-    
+
+def _clamp_num(value, default, cast_fn, min_val, max_val):
+    try:
+        parsed = cast_fn(value)
+    except (ValueError, TypeError):
+        return default
+    return max(min_val, min(max_val, parsed))
+
+
+def _parse_bot_config(config, default_model, default_max_tokens):
     config = config or {}
-    model = config.get("model") or NVIDIA_MODEL
-    try:
-        temperature = float(config.get("temperature", 0.7))
-    except (ValueError, TypeError):
-        temperature = 0.7
-    try:
-        max_chars = int(config.get("max_chars", 200))
-    except (ValueError, TypeError):
-        max_chars = 200
-    try:
-        memory_limit = int(config.get("memory_limit", 500))
-    except (ValueError, TypeError):
-        memory_limit = 500
-    try:
-        top_p = float(config.get("top_p", 0.9))
-    except (ValueError, TypeError):
-        top_p = 0.9
-    try:
-        max_tokens = int(config.get("max_tokens", 450))
-    except (ValueError, TypeError):
-        max_tokens = 450
+    return {
+        "model": (config.get("model") or default_model).strip() or default_model,
+        "temperature": _clamp_num(config.get("temperature", 0.7), 0.7, float, 0.0, 1.5),
+        "max_chars": _clamp_num(config.get("max_chars", 200), 200, int, 50, 1000),
+        "memory_limit": _clamp_num(config.get("memory_limit", 500), 500, int, 100, 2000),
+        "top_p": _clamp_num(config.get("top_p", 0.9), 0.9, float, 0.1, 1.0),
+        "max_tokens": _clamp_num(config.get("max_tokens", default_max_tokens), default_max_tokens, int, 50, 1000),
+    }
 
+
+def _build_actor_prompts(bot_name, topic, last_message, memory_context, mode, role_info, cfg):
     session_mem = (memory_context or "").strip()
-    if len(session_mem) > memory_limit:
-        session_mem = session_mem[-memory_limit:]
+    if len(session_mem) > cfg["memory_limit"]:
+        session_mem = session_mem[-cfg["memory_limit"]:]
 
-    mem_block = f"\nSession history (last {memory_limit} chars):\n{session_mem}\n" if session_mem else ""
-    char_limit_prompt = max(40, max_chars - 20)
+    mem_block = f"\nSession history (last {cfg['memory_limit']} chars):\n{session_mem}\n" if session_mem else ""
+    char_limit_prompt = max(40, cfg["max_chars"] - 20)
 
     if mode == "roleplay" and role_info:
         char_name = role_info.get("char_name", "Character")
@@ -155,7 +151,7 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
         opp_char = role_info.get("opp_char", "Opponent")
 
         system_prompt = (
-            f"SYSTEM IDENTITY: You are N Waths, currently role-playing as '{char_name}'.\n"
+            f"SYSTEM IDENTITY: You are {bot_name}, currently role-playing as '{char_name}'.\n"
             f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
             f"SETTING & SCENARIO: {scenario}\n"
             "ROLEPLAY DIRECTIVES:\n"
@@ -164,208 +160,151 @@ def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=
             f"3. You are 100% in-character as '{char_name}'. Never speak out of character or refer to yourself as an AI.\n"
             f"4. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
             "5. Output ONLY spoken dialogue and action. No meta commentary or reasoning reflections.\n"
-            f"6. Use your {memory_limit}-char session memory to react directly to what happened in this match."
+            f"6. Use your {cfg['memory_limit']}-char session memory to react directly to what happened in this match."
         )
-
         if last_message:
             user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under {char_limit_prompt} characters:"
         else:
             user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under {char_limit_prompt} characters:"
-    else:
-        system_prompt = (
-            "SYSTEM IDENTITY: You are 'N Waths', an expressive, witty conversationalist in a live dialogue duel against P Waths.\n"
-            "DIRECTIVES:\n"
-            "1. Answer immediately with dialogue only. Do not spend reasoning tokens.\n"
-            f"2. Strictly output under {char_limit_prompt} characters.\n"
-            "3. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
-            f"4. Use your {memory_limit}-char session memory to maintain conversational continuity.\n"
-            "5. Stay engaging, punchy, and on topic."
-        )
+        return system_prompt, user_prompt
 
-        if last_message:
-            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under {char_limit_prompt} characters:"
-        else:
-            user_prompt = f"Topic: '{topic}'. Give your opening statement in under {char_limit_prompt} characters:"
+    opp_name = "P Waths" if bot_name == "N Waths" else "N Waths"
+    system_prompt = (
+        f"SYSTEM IDENTITY: You are '{bot_name}', an expressive, witty conversationalist in a live dialogue duel against {opp_name}.\n"
+        "DIRECTIVES:\n"
+        "1. Answer immediately with dialogue only. Do not spend reasoning tokens.\n"
+        f"2. Strictly output under {char_limit_prompt} characters.\n"
+        "3. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
+        f"4. Use your {cfg['memory_limit']}-char session memory to maintain conversational continuity.\n"
+        "5. Stay engaging, punchy, and on topic."
+    )
+    if last_message:
+        user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under {char_limit_prompt} characters:"
+    else:
+        user_prompt = f"Topic: '{topic}'. Give your opening statement in under {char_limit_prompt} characters:"
+    return system_prompt, user_prompt
+
+
+def _call_openai_compat(
+    *,
+    bot_name,
+    provider_name,
+    endpoint,
+    api_key,
+    key_env_name,
+    default_model,
+    default_max_tokens,
+    extra_headers=None,
+    topic,
+    last_message,
+    memory_context,
+    mode="dialogue",
+    role_info=None,
+    config=None,
+):
+    if not api_key:
+        return {"error": f"{key_env_name} missing in .env", "status_code": 503}
+
+    cfg = _parse_bot_config(config, default_model, default_max_tokens)
+    system_prompt, user_prompt = _build_actor_prompts(
+        bot_name, topic, last_message, memory_context, mode, role_info, cfg
+    )
 
     payload = {
-        "model": model,
+        "model": cfg["model"],
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "top_p": top_p
+        "max_tokens": cfg["max_tokens"],
+        "temperature": cfg["temperature"],
+        "top_p": cfg["top_p"],
     }
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    if extra_headers:
+        headers.update(extra_headers)
+
     req = urllib.request.Request(
-        "https://integrate.api.nvidia.com/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {NVIDIA_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        data=json.dumps(payload).encode("utf-8")
+        endpoint,
+        headers=headers,
+        data=json.dumps(payload).encode("utf-8"),
     )
 
     try:
         with urllib.request.urlopen(req, timeout=90) as res:
             data = json.loads(res.read())
             choice = data["choices"][0]["message"]
-            # Important: never use reasoning_content, which reveals internal thoughts
             content = choice.get("content") or ""
             if "</think>" in content:
                 content = content.split("</think>")[-1].strip()
             content = content.strip().strip('"')
             if not content and choice.get("reasoning_content"):
-                import re
                 quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
                 if quotes:
                     content = quotes[-1].strip()
-            if len(content) > max_chars:
-                content = content[:max_chars - 3] + "..."
+            if len(content) > cfg["max_chars"]:
+                content = content[: cfg["max_chars"] - 3] + "..."
             usage = data.get("usage", {})
             return {
                 "text": content,
                 "raw_length": len(content),
-                "model": model,
-                "provider": "NVIDIA NIM",
+                "model": cfg["model"],
+                "provider": provider_name,
                 "tokens": {
                     "prompt": usage.get("prompt_tokens", 0),
                     "completion": usage.get("completion_tokens", 0),
-                    "total": usage.get("total_tokens", 0)
-                }
+                    "total": usage.get("total_tokens", 0),
+                },
             }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"NVIDIA API Error {e.code}: {error_body}"}
+        return {"error": f"{provider_name} API Error {e.code}: {error_body}", "status_code": 502}
     except Exception as e:
-        return {"error": f"NVIDIA Connection Error: {str(e)}"}
+        return {"error": f"{provider_name} Connection Error: {str(e)}", "status_code": 502}
+
+
+def call_nvidia(topic, last_message, memory_context, mode="dialogue", role_info=None, config=None):
+    return _call_openai_compat(
+        bot_name="N Waths",
+        provider_name="NVIDIA NIM",
+        endpoint="https://integrate.api.nvidia.com/v1/chat/completions",
+        api_key=NVIDIA_API_KEY,
+        key_env_name="NVIDIA_API_KEY",
+        default_model=NVIDIA_MODEL,
+        default_max_tokens=450,
+        topic=topic,
+        last_message=last_message,
+        memory_context=memory_context,
+        mode=mode,
+        role_info=role_info,
+        config=config,
+    )
+
 
 def call_openrouter(topic, last_message, memory_context, mode="dialogue", role_info=None, config=None):
-    if not OPENROUTER_API_KEY:
-        return {"error": "OPENROUTER_API_KEY missing in .env"}
-
-    config = config or {}
-    model = config.get("model") or OPENROUTER_MODEL
-    try:
-        temperature = float(config.get("temperature", 0.7))
-    except (ValueError, TypeError):
-        temperature = 0.7
-    try:
-        max_chars = int(config.get("max_chars", 200))
-    except (ValueError, TypeError):
-        max_chars = 200
-    try:
-        memory_limit = int(config.get("memory_limit", 500))
-    except (ValueError, TypeError):
-        memory_limit = 500
-    try:
-        top_p = float(config.get("top_p", 0.9))
-    except (ValueError, TypeError):
-        top_p = 0.9
-    try:
-        max_tokens = int(config.get("max_tokens", 200))
-    except (ValueError, TypeError):
-        max_tokens = 200
-
-    session_mem = (memory_context or "").strip()
-    if len(session_mem) > memory_limit:
-        session_mem = session_mem[-memory_limit:]
-
-    mem_block = f"\nSession history (last {memory_limit} chars):\n{session_mem}\n" if session_mem else ""
-    char_limit_prompt = max(40, max_chars - 20)
-
-    if mode == "roleplay" and role_info:
-        char_name = role_info.get("char_name", "Character")
-        role_ctx = role_info.get("role_context", "")
-        scenario = role_info.get("scenario", "")
-        opp_char = role_info.get("opp_char", "Opponent")
-
-        system_prompt = (
-            f"SYSTEM IDENTITY: You are P Waths, an elite duel actor currently role-playing as '{char_name}'.\n"
-            f"YOUR CHARACTER PROFILE & OBJECTIVE: {role_ctx}\n"
-            f"SETTING & SCENARIO: {scenario}\n"
-            "ROLEPLAY DIRECTIVES:\n"
-            f"1. Output strictly under {char_limit_prompt} characters. Never exceed {char_limit_prompt} characters.\n"
-            f"2. You are 100% in-character as '{char_name}'. Never break character or refer to yourself as an AI.\n"
-            f"3. Speak directly to '{opp_char}'. Use vivid character voice and concise actions in asterisks (e.g. *actions*).\n"
-            "4. No internal reasoning, thought dumps, or tags. Output only dialogue and action.\n"
-            f"5. Use your {memory_limit}-char session memory to react directly to what happened in this match."
-        )
-
-        if last_message:
-            user_prompt = f"{mem_block}'{opp_char}' just said: '{last_message}'. Reply in-character under {char_limit_prompt} characters:"
-        else:
-            user_prompt = f"{mem_block}Deliver your opening in-character statement as '{char_name}' to '{opp_char}' in under {char_limit_prompt} characters:"
-    else:
-        system_prompt = (
-            "SYSTEM IDENTITY: You are 'P Waths', a sharp, smart conversationalist bot in a live dialogue duel against N Waths.\n"
-            "DIRECTIVES:\n"
-            f"1. Strictly output under {char_limit_prompt} characters.\n"
-            "2. Do not output reasoning or thoughts. Output ONLY your direct spoken statement.\n"
-            f"3. Use your {memory_limit}-char session memory to maintain conversational continuity.\n"
-            "4. Stay engaging, punchy, and on topic."
-        )
-
-        if last_message:
-            user_prompt = f"Topic: '{topic}'.{mem_block}Opponent said: '{last_message}'. Reply in under {char_limit_prompt} characters:"
-        else:
-            user_prompt = f"Topic: '{topic}'. Give your opening thought in under {char_limit_prompt} characters:"
-
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "top_p": top_p
-    }
-
-    req = urllib.request.Request(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:5000",
-            "X-Title": "Waths Arena"
+    return _call_openai_compat(
+        bot_name="P Waths",
+        provider_name="OpenRouter",
+        endpoint="https://openrouter.ai/api/v1/chat/completions",
+        api_key=OPENROUTER_API_KEY,
+        key_env_name="OPENROUTER_API_KEY",
+        default_model=OPENROUTER_MODEL,
+        default_max_tokens=200,
+        extra_headers={
+            "HTTP-Referer": "http://127.0.0.1:5000",
+            "X-Title": "Waths Arena",
         },
-        data=json.dumps(payload).encode("utf-8")
+        topic=topic,
+        last_message=last_message,
+        memory_context=memory_context,
+        mode=mode,
+        role_info=role_info,
+        config=config,
     )
-
-    try:
-        with urllib.request.urlopen(req, timeout=90) as res:
-            data = json.loads(res.read())
-            choice = data["choices"][0]["message"]
-            content = choice.get("content") or ""
-            if "</think>" in content:
-                content = content.split("</think>")[-1].strip()
-            content = content.strip().strip('"')
-            if not content and choice.get("reasoning_content"):
-                import re
-                quotes = re.findall(r'"([^"\n]{10,250})"', choice.get("reasoning_content"))
-                if quotes:
-                    content = quotes[-1].strip()
-            if len(content) > max_chars:
-                content = content[:max_chars - 3] + "..."
-            usage = data.get("usage", {})
-            return {
-                "text": content,
-                "raw_length": len(content),
-                "model": model,
-                "provider": "OpenRouter",
-                "tokens": {
-                    "prompt": usage.get("prompt_tokens", 0),
-                    "completion": usage.get("completion_tokens", 0),
-                    "total": usage.get("total_tokens", 0)
-                }
-            }
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode("utf-8", errors="ignore")
-        return {"error": f"OpenRouter API Error {e.code}: {error_body}"}
-    except Exception as e:
-        return {"error": f"OpenRouter Connection Error: {str(e)}"}
 
 @app.route("/")
 def index():
@@ -399,6 +338,11 @@ def bot_info():
         }
     })
 
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
+
+
 @app.route("/api/arena-master/brief", methods=["POST"])
 def arena_master_brief():
     data = request.json or {}
@@ -410,7 +354,9 @@ def arena_master_brief():
         return jsonify({"error": "Both character names are required"}), 400
 
     result = call_arena_master(n_character, p_character, scenario)
-    return jsonify(result)
+    status_code = result.pop("status_code", 200)
+    return jsonify(result), status_code
+
 
 @app.route("/api/bot-turn", methods=["POST"])
 def bot_turn():
@@ -434,7 +380,8 @@ def bot_turn():
     else:
         return jsonify({"error": f"Unknown bot type: {bot_type}"}), 400
 
-    return jsonify(result)
+    status_code = result.pop("status_code", 200)
+    return jsonify(result), status_code
 
 @app.route("/<path:path>")
 def static_files(path):
