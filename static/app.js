@@ -290,7 +290,17 @@ function startSimulation() {
   STATE.currentTurn = "N Waths"; // N Waths starts
 
   // Reset UI
-  chatFeed.innerHTML = "";
+  chatFeed.innerHTML = `
+    <div class="idle-stage-card">
+      <span class="idle-stage-badge">Dialogue Arena // Ready</span>
+      <h3>Synchronous Head-to-Head Debate</h3>
+      <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+      <div class="idle-stage-hints">
+        <span>Keys 1–0: Quick Score</span>
+        <span>Esc: Close Settings</span>
+      </div>
+    </div>
+  `;
   const archedDocket = document.getElementById("archedDocket");
   if (archedDocket) archedDocket.style.display = "none";
   topicInput.disabled = true;
@@ -321,7 +331,17 @@ function resetSimulation() {
   nextTurnBtn.disabled = true;
   if (exportBtn) exportBtn.disabled = true;
 
-  chatFeed.innerHTML = "";
+  chatFeed.innerHTML = `
+    <div class="idle-stage-card">
+      <span class="idle-stage-badge">Dialogue Arena // Ready</span>
+      <h3>Synchronous Head-to-Head Debate</h3>
+      <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+      <div class="idle-stage-hints">
+        <span>Keys 1–0: Quick Score</span>
+        <span>Esc: Close Settings</span>
+      </div>
+    </div>
+  `;
   const archedDocket = document.getElementById("archedDocket");
   if (archedDocket) archedDocket.style.display = "";
 

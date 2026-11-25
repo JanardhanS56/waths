@@ -466,7 +466,17 @@ function resetSimulation() {
   if (masterBriefingCard) masterBriefingCard.style.display = "none";
 
   if (chatFeed) {
-    chatFeed.innerHTML = "";
+    chatFeed.innerHTML = `
+      <div class="idle-stage-card">
+        <span class="idle-stage-badge">Roleplay Arena // Ready</span>
+        <h3>In-Character Persona Duel</h3>
+        <p>Choose a preset or customize both actors and scenario, then click <strong>START ▶</strong> to summon the Groq Arena Master.</p>
+        <div class="idle-stage-hints">
+          <span>Keys 1–0: Fidelity Score</span>
+          <span>Esc: Close Settings</span>
+        </div>
+      </div>
+    `;
   }
   const archedDocket = document.getElementById("archedDocket");
   if (archedDocket) archedDocket.style.display = "";
@@ -685,4 +695,5 @@ function escapeHtml(str) {
   return window.WathsArena.escapeHtml(str);
 }
 
+syncCharacterBadges();
 fetchBotInfo();
