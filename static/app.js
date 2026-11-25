@@ -158,8 +158,17 @@ pDropdown.addEventListener("click", (e) => e.stopPropagation());
 // Topic Quick Pills
 quickTopicPills.forEach(pill => {
   pill.addEventListener("click", () => {
+    quickTopicPills.forEach(p => p.classList.remove("active"));
+    pill.classList.add("active");
     topicInput.value = pill.getAttribute("data-topic");
     topicInput.focus();
+  });
+});
+
+topicInput.addEventListener("input", () => {
+  const val = topicInput.value.trim();
+  quickTopicPills.forEach(p => {
+    p.classList.toggle("active", p.getAttribute("data-topic") === val);
   });
 });
 
