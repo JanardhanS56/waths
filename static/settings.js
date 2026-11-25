@@ -81,8 +81,16 @@
     const docketMem = document.getElementById("docketMemCap");
     if (docketN) docketN.textContent = currentSettings.n.model.split("/").pop();
     if (docketP) docketP.textContent = currentSettings.p.model.split("/").pop();
-    if (docketChar) docketChar.textContent = `≤ ${currentSettings.n.max_chars}`;
-    if (docketMem) docketMem.textContent = `${currentSettings.n.memory_limit}c`;
+    if (docketChar) {
+      docketChar.textContent = currentSettings.n.max_chars === currentSettings.p.max_chars
+        ? `≤ ${currentSettings.n.max_chars}`
+        : `N≤${currentSettings.n.max_chars} / P≤${currentSettings.p.max_chars}`;
+    }
+    if (docketMem) {
+      docketMem.textContent = currentSettings.n.memory_limit === currentSettings.p.memory_limit
+        ? `${currentSettings.n.memory_limit}c`
+        : `N:${currentSettings.n.memory_limit}c / P:${currentSettings.p.memory_limit}c`;
+    }
   }
 
   function updateGaugeRing(svgId, percentage) {
