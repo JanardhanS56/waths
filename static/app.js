@@ -292,12 +292,12 @@ function startSimulation() {
   // Reset UI
   chatFeed.innerHTML = `
     <div class="idle-stage-card">
-      <span class="idle-stage-badge">Dialogue Arena // Ready</span>
-      <h3>Synchronous Head-to-Head Debate</h3>
-      <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+      <span class="idle-stage-badge">Dialogue arena</span>
+      <h3>Synchronous head-to-head debate</h3>
+      <p>Enter a topic or pick a preset above, then click Start. Click either actor card to inspect live model and token telemetry.</p>
       <div class="idle-stage-hints">
-        <span>Keys 1–0: Quick Score</span>
-        <span>Esc: Close Settings</span>
+        <span>Keys 1–0: score</span>
+        <span>Esc: close settings</span>
       </div>
     </div>
   `;
@@ -333,12 +333,12 @@ function resetSimulation() {
 
   chatFeed.innerHTML = `
     <div class="idle-stage-card">
-      <span class="idle-stage-badge">Dialogue Arena // Ready</span>
-      <h3>Synchronous Head-to-Head Debate</h3>
-      <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+      <span class="idle-stage-badge">Dialogue arena</span>
+      <h3>Synchronous head-to-head debate</h3>
+      <p>Enter a topic or pick a preset above, then click Start. Click either actor card to inspect live model and token telemetry.</p>
       <div class="idle-stage-hints">
-        <span>Keys 1–0: Quick Score</span>
-        <span>Esc: Close Settings</span>
+        <span>Keys 1–0: score</span>
+        <span>Esc: close settings</span>
       </div>
     </div>
   `;
@@ -418,9 +418,9 @@ async function executeNextTurn() {
     typingRow.remove();
 
     if (data.error) {
-      appendSystemBanner(`⚠️ ${bot} Error: ${data.error}`, "error");
+      appendSystemBanner(`${bot} error: ${data.error}`, "error");
       turnStatus.textContent = `${bot} encountered an error.`;
-      ribbonStatus.textContent = `Error occurred: ${data.error}`;
+      ribbonStatus.textContent = `Error: ${data.error}`;
       nextTurnBtn.disabled = false;
       return;
     }
@@ -453,7 +453,7 @@ async function executeNextTurn() {
 
   } catch (err) {
     typingRow.remove();
-    appendSystemBanner(`⚠️ Network Error: ${err.message}`, "error");
+    appendSystemBanner(`Network error: ${err.message}`, "error");
     turnStatus.textContent = "Network error communicating with server.";
     ribbonStatus.textContent = "Failed to reach server.";
     nextTurnBtn.disabled = false;
@@ -474,7 +474,7 @@ function renderBotMessage(bot, text, maxChars = 200) {
   bubble.innerHTML = `
     <div class="msg-header">
       <span class="msg-author">
-        ${isN ? '🟢' : '🔵'} ${bot}
+        ${bot}
       </span>
       <span class="char-badge ${isWarning ? 'warning' : ''}">
         ${charCount}/${maxChars} chars
@@ -483,7 +483,7 @@ function renderBotMessage(bot, text, maxChars = 200) {
     <div class="msg-text">${escapeHtml(text)}</div>
     <div class="rating-area">
       <div class="rating-prompt">
-        <span>Score this statement (1 - 10):</span>
+        <span>Score (1–10)</span>
       </div>
       <div class="score-buttons">
         ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button class="score-btn" data-score="${n}">${n}</button>`).join('')}
@@ -529,7 +529,7 @@ function recordScore(bot, score, bubbleEl) {
   if (ratingArea) {
     ratingArea.innerHTML = `
       <div class="rated-pill">
-        ⭐ Scored: ${score} / 10
+        Score: ${score} / 10
       </div>
     `;
   }

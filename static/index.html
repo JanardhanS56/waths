@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waths Arena | Dialogue Benchmark</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <title>Waths Arena | Dialogue benchmark</title>
+  <link rel="stylesheet" href="style.css?v=8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -17,33 +17,28 @@
     <header class="top-nav">
       <div class="nav-left">
         <a href="/" class="brand-group">
-          <span class="brand-waths">WATHS</span>
-          <span class="badge-eval">EVAL</span>
+          <span class="brand-waths">Waths</span>
+          <span class="badge-eval">Eval</span>
         </a>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab active">
-            Dialogue Benchmark
-            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
-          </a>
-          <a href="/roleplay" class="nav-tab">
-            Roleplay Benchmark
-            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
-          </a>
+          <a href="/" class="nav-tab active">Dialogue benchmark</a>
+          <a href="/roleplay" class="nav-tab">Roleplay benchmark</a>
         </nav>
       </div>
 
       <div class="nav-right">
-        <button id="startBtn" class="btn-nav-start" title="Start Dialogue Debate">
-          START ▶
+        <button id="startBtn" class="btn-nav-start" title="Start dialogue debate">
+          <svg class="icon" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          Start
         </button>
         <button id="stopBtn" class="btn-nav-stop" disabled title="Halt current match">
-          STOP
+          Stop
         </button>
-        <button id="resetBtn" class="btn-nav-reset" title="Reset Arena">
-          ↺
+        <button id="resetBtn" class="btn-nav-reset" title="Reset arena">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
-        <button id="settingsBtn" class="btn-settings-trigger" title="Arena Bot Configurations">
-          ⚙️
+        <button id="settingsBtn" class="btn-settings-trigger" title="Bot configurations">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         </button>
       </div>
     </header>
@@ -51,13 +46,15 @@
     <!-- Topic Setup Bar -->
     <section class="setup-bar">
       <div class="setup-main-row" style="grid-template-columns: 1fr;">
-        <div class="scenario-capsule" style="padding: 6px 16px;">
-          <span class="scenario-search-icon">⚔️</span>
+        <div class="scenario-capsule">
+          <span class="scenario-search-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
           <input 
             type="text" 
             id="topicInput" 
             class="scenario-capsule-input" 
-            placeholder="Enter debate topic (e.g. Will AI ever experience genuine emotions?)..." 
+            placeholder="Debate topic" 
             maxlength="150" 
           />
         </div>
@@ -66,7 +63,7 @@
       <!-- Presets & Rounds Sub-row -->
       <div class="setup-sub-row">
         <div class="presets-group">
-          <span class="presets-label">Topics:</span>
+          <span class="presets-label">Topics</span>
           <button class="preset-pill topic-pill" data-topic="Will AI replace human artists or empower them?">AI & Art</button>
           <button class="preset-pill topic-pill" data-topic="Space exploration vs fixing Earth's urgent climate issues">Space vs Earth</button>
           <button class="preset-pill topic-pill" data-topic="Is pineapple on pizza culinary genius or an offense?">Pineapple Pizza</button>
@@ -105,7 +102,6 @@
             <div class="orbit-actor-identity">
               <div class="cosmic-avatar-container n-cosmic-avatar">
                 <span>N</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div class="actor-meta-block">
                 <span class="actor-name-title">N Waths</span>
@@ -168,19 +164,19 @@
       <section class="center-chat-viewport" id="chatViewport">
         <div class="chat-feed-stream" id="chatFeed">
           <div class="idle-stage-card">
-            <span class="idle-stage-badge">Dialogue Arena // Ready</span>
-            <h3>Synchronous Head-to-Head Debate</h3>
-            <p>Enter a custom topic or pick a preset above, then click <strong>START ▶</strong>. Click either actor card to inspect live model &amp; token telemetry.</p>
+            <span class="idle-stage-badge">Dialogue arena</span>
+            <h3>Synchronous head-to-head debate</h3>
+            <p>Enter a topic or pick a preset above, then click Start. Click either actor card to inspect live model and token telemetry.</p>
             <div class="idle-stage-hints">
-              <span>Keys 1–0: Quick Score</span>
-              <span>Esc: Close Settings</span>
+              <span>Keys 1–0: score</span>
+              <span>Esc: close settings</span>
             </div>
           </div>
         </div>
 
-        <!-- Arched Bottom Docket Overlay -->
+        <!-- Bottom Docket Bar -->
         <div class="arched-docket-overlay" id="archedDocket">
-          <div class="docket-arch-title">Head-to-Head Dialogue Evaluation</div>
+          <div class="docket-arch-title">Head-to-head dialogue evaluation</div>
           <div class="docket-specs-pill-row">
             <div class="docket-spec-badge">
               <span class="docket-badge-ring">N</span>
@@ -191,11 +187,11 @@
               <span><strong>OpenRouter</strong> <span id="docketPModel">llama-3.2-3b-instruct</span></span>
             </div>
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">▤</span>
+              <span class="docket-badge-ring">C</span>
               <span><strong id="docketCharCap">≤ 200</strong> char</span>
             </div>
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">🛡</span>
+              <span class="docket-badge-ring">M</span>
               <span><strong id="docketMemCap">500c</strong> rolling memory</span>
             </div>
           </div>
@@ -209,7 +205,6 @@
             <div class="orbit-actor-identity">
               <div class="cosmic-avatar-container p-cosmic-avatar">
                 <span>P</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div class="actor-meta-block">
                 <span class="actor-name-title">P Waths</span>
@@ -271,31 +266,34 @@
 
     <!-- Bottom Controls Ribbon -->
     <footer class="bottom-ribbon" id="actionRibbon">
-      <span class="ribbon-pill-tag">Dialogue Docket</span>
+      <span class="ribbon-pill-tag">Dialogue docket</span>
       <div class="ribbon-status" id="ribbonStatus">Ready</div>
       <div class="ribbon-right-controls">
         <label class="toggle-container">
           <input type="checkbox" id="autoAdvanceToggle" checked>
-          <span>Auto-trigger next turn...</span>
+          <span>Auto-advance</span>
         </label>
-        <button id="exportBtn" class="btn-next-pill" title="Export Match Transcript (.md)" disabled>
-          Export ↓
+        <button id="exportBtn" class="btn-next-pill" title="Export match transcript (.md)" disabled>
+          Export
         </button>
         <button id="nextTurnBtn" class="btn-next-pill" disabled>
-          Next Turn ➔
+          Next turn
         </button>
       </div>
     </footer>
   </div>
 
-  <!-- Settings Modal (Matching Image 2) -->
+  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal" style="display: none;">
     <div class="settings-modal-card">
       <div class="settings-modal-header">
         <div class="settings-modal-title">
-          <span>⚙</span> ARENA BOT CONFIGURATIONS
+          <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Arena bot configurations
         </div>
-        <button class="modal-close-btn" id="closeSettingsBtn" title="Close Settings">✕</button>
+        <button class="modal-close-btn" id="closeSettingsBtn" title="Close settings">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
 
       <div class="settings-modal-body">
@@ -305,10 +303,9 @@
             <div class="col-brand-header">
               <div class="cosmic-avatar-container n-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
                 <span>N</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div>
-                <h4>N WATHS <span class="provider-tag">(NVIDIA NIM)</span></h4>
+                <h4>N Waths <span class="provider-tag">(NVIDIA NIM)</span></h4>
               </div>
             </div>
 
@@ -392,10 +389,9 @@
             <div class="col-brand-header">
               <div class="cosmic-avatar-container p-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
                 <span>P</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div>
-                <h4>P WATHS <span class="provider-tag">(OpenRouter)</span></h4>
+                <h4>P Waths <span class="provider-tag">(OpenRouter)</span></h4>
               </div>
             </div>
 
@@ -477,8 +473,8 @@
       </div>
 
       <div class="settings-modal-footer">
-        <button id="resetSettingsBtn" class="btn-modal-reset">RESET TO DEFAULTS</button>
-        <button id="saveSettingsBtn" class="btn-modal-save">SAVE & APPLY</button>
+        <button id="resetSettingsBtn" class="btn-modal-reset">Reset to defaults</button>
+        <button id="saveSettingsBtn" class="btn-modal-save">Save &amp; apply</button>
       </div>
     </div>
   </div>
