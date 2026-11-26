@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Waths Arena | Roleplay Benchmark</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <title>Waths Arena | Roleplay benchmark</title>
+  <link rel="stylesheet" href="style.css?v=8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -17,33 +17,28 @@
     <header class="top-nav">
       <div class="nav-left">
         <a href="/" class="brand-group">
-          <span class="brand-waths">WATHS</span>
-          <span class="badge-eval">EVAL</span>
+          <span class="brand-waths">Waths</span>
+          <span class="badge-eval">Eval</span>
         </a>
         <nav class="arena-nav-tabs">
-          <a href="/" class="nav-tab">
-            Dialogue Benchmark
-            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
-          </a>
-          <a href="/roleplay" class="nav-tab active">
-            Roleplay Benchmark
-            <span class="tab-dots"><span class="tab-dot"></span><span class="tab-dot"></span></span>
-          </a>
+          <a href="/" class="nav-tab">Dialogue benchmark</a>
+          <a href="/roleplay" class="nav-tab active">Roleplay benchmark</a>
         </nav>
       </div>
 
       <div class="nav-right">
-        <button id="startBtn" class="btn-nav-start" title="Summon Master & Start Match">
-          START ▶
+        <button id="startBtn" class="btn-nav-start" title="Summon master and start match">
+          <svg class="icon" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+          Start
         </button>
         <button id="stopBtn" class="btn-nav-stop" disabled title="Halt current match">
-          STOP
+          Stop
         </button>
-        <button id="resetBtn" class="btn-nav-reset" title="Reset Arena">
-          ↺
+        <button id="resetBtn" class="btn-nav-reset" title="Reset arena">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
-        <button id="settingsBtn" class="btn-settings-trigger" title="Arena Bot Configurations">
-          ⚙️
+        <button id="settingsBtn" class="btn-settings-trigger" title="Bot configurations">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         </button>
       </div>
     </header>
@@ -55,40 +50,46 @@
         <div class="char-capsule n-capsule">
           <div class="capsule-avatar n-avatar-ring">
             <span id="nCapsuleInitial">K</span>
-            <span class="cosmic-ring"></span>
           </div>
-          <input type="text" id="nCharInput" class="capsule-input" placeholder="N Actor (e.g. Kira)" maxlength="45"
-            value="Kira (Light Yagami)" title="N Waths Character Persona" />
-          <button class="capsule-icon-btn" id="openNSettingsQuick" title="N Waths Model Settings">🎛️</button>
+          <input type="text" id="nCharInput" class="capsule-input" placeholder="N actor" maxlength="45"
+            value="Kira (Light Yagami)" title="N Waths character persona" />
+          <button class="capsule-icon-btn" id="openNSettingsQuick" title="N Waths settings">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </button>
         </div>
 
-        <span class="vs-badge-pill">VS</span>
+        <span class="vs-badge-pill">vs</span>
 
         <!-- P Character Capsule -->
         <div class="char-capsule p-capsule">
           <div class="capsule-avatar p-avatar-ring">
             <span id="pCapsuleInitial">L</span>
-            <span class="cosmic-ring"></span>
           </div>
-          <input type="text" id="pCharInput" class="capsule-input" placeholder="P Actor (e.g. L)" maxlength="45"
-            value="L (L Lawliet)" title="P Waths Character Persona" />
-          <button class="capsule-icon-btn" id="openPSettingsQuick" title="P Waths Model Settings">🎛️</button>
+          <input type="text" id="pCharInput" class="capsule-input" placeholder="P actor" maxlength="45"
+            value="L (L Lawliet)" title="P Waths character persona" />
+          <button class="capsule-icon-btn" id="openPSettingsQuick" title="P Waths settings">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </button>
         </div>
 
         <!-- Scenario Capsule -->
         <div class="scenario-capsule">
-          <span class="scenario-search-icon">🔍</span>
+          <span class="scenario-search-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
           <input type="text" id="scenarioInput" class="scenario-capsule-input"
             value="Quiet Tokyo coffee shop, testing each other with veiled deductions"
-            placeholder="Scenario / Setting (e.g. Quiet coffee shop in Tokyo)..." maxlength="150" />
-          <button class="scenario-clear-btn" id="clearScenarioBtn" style="display:inline-block;">✕</button>
+            placeholder="Scenario or setting" maxlength="150" />
+          <button class="scenario-clear-btn" id="clearScenarioBtn" style="display:inline-flex;">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
       </div>
 
       <!-- Presets & Rounds Sub-row -->
       <div class="setup-sub-row">
         <div class="presets-group">
-          <span class="presets-label">Presets:</span>
+          <span class="presets-label">Presets</span>
           <button class="preset-pill active" data-n="Kira (Light Yagami)" data-p="L (L Lawliet)"
             data-scenario="Quiet Tokyo coffee shop, testing each other with veiled deductions">Kira vs L</button>
           <button class="preset-pill" data-n="The Joker" data-p="Batman"
@@ -117,9 +118,11 @@
     <!-- Arena Master Briefing Banner -->
     <section class="master-callout-banner" id="masterBriefingCard" style="display:none;">
       <div class="master-callout-left" id="stripHeader">
-        <span class="master-scale-icon">⚖️</span>
-        <span class="master-callout-title">Arena Master:</span>
-        <span class="master-scenario-text" id="briefScenario">Generating setting & roles...</span>
+        <span class="master-scale-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 7h14"/><path d="M3 14l2-7 2 7a2 2 0 0 1-4 0z"/><path d="M17 14l2-7 2 7a2 2 0 0 1-4 0z"/></svg>
+        </span>
+        <span class="master-callout-title">Arena master:</span>
+        <span class="master-scenario-text" id="briefScenario">Generating setting and roles</span>
       </div>
       <div class="master-toggle-switch" id="toggleBriefingBtn" title="Toggle detailed roles">
         <span class="switch-pill" id="masterSwitchPill"><span class="switch-knob"></span></span>
@@ -157,7 +160,6 @@
             <div class="orbit-actor-identity">
               <div class="cosmic-avatar-container n-cosmic-avatar">
                 <span>N</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div class="actor-meta-block">
                 <span class="actor-name-title" id="nCardName">N Waths</span>
@@ -227,34 +229,34 @@
       <section class="center-chat-viewport" id="chatViewport">
         <div class="chat-feed-stream" id="chatFeed">
           <div class="idle-stage-card">
-            <span class="idle-stage-badge">Roleplay Arena // Ready</span>
-            <h3>In-Character Persona Duel</h3>
-            <p>Choose a preset or customize both actors and scenario, then click <strong>START ▶</strong> to summon the Groq Arena Master.</p>
+            <span class="idle-stage-badge">Roleplay arena</span>
+            <h3>In-character persona duel</h3>
+            <p>Choose a preset or customize both actors and scenario, then click Start to summon the Groq Arena Master.</p>
             <div class="idle-stage-hints">
-              <span>Keys 1–0: Fidelity Score</span>
-              <span>Esc: Close Settings</span>
+              <span>Keys 1–0: score</span>
+              <span>Esc: close settings</span>
             </div>
           </div>
         </div>
 
-        <!-- Arched Bottom Docket Overlay (Matching Image 1) -->
+        <!-- Bottom Docket Bar -->
         <div class="arched-docket-overlay" id="archedDocket">
-          <div class="docket-arch-title">Persona Fidelity & Scenario Duel</div>
+          <div class="docket-arch-title">Persona fidelity and scenario duel</div>
           <div class="docket-specs-pill-row">
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">⚙</span>
+              <span class="docket-badge-ring">G</span>
               <span><strong>Groq</strong> GPT-OSS 120B</span>
             </div>
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">▶</span>
-              <span>Fidelity Score <strong>1–10</strong></span>
+              <span class="docket-badge-ring">F</span>
+              <span>Fidelity score <strong>1–10</strong></span>
             </div>
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">▤</span>
+              <span class="docket-badge-ring">C</span>
               <span><strong id="docketCharCap">≤ 200</strong> char</span>
             </div>
             <div class="docket-spec-badge">
-              <span class="docket-badge-ring">🛡</span>
+              <span class="docket-badge-ring">M</span>
               <span>In-session <strong>isolated</strong></span>
             </div>
           </div>
@@ -268,7 +270,6 @@
             <div class="orbit-actor-identity">
               <div class="cosmic-avatar-container p-cosmic-avatar">
                 <span>P</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div class="actor-meta-block">
                 <span class="actor-name-title" id="pCardName">P Waths</span>
@@ -334,31 +335,34 @@
 
     <!-- Bottom Controls Ribbon -->
     <footer class="bottom-ribbon" id="actionRibbon">
-      <span class="ribbon-pill-tag">Roleplay Docket</span>
+      <span class="ribbon-pill-tag">Roleplay docket</span>
       <div class="ribbon-status" id="ribbonStatus">Ready</div>
       <div class="ribbon-right-controls">
         <label class="toggle-container">
           <input type="checkbox" id="autoAdvanceToggle" checked>
-          <span>Auto-trigger next actor...</span>
+          <span>Auto-advance</span>
         </label>
-        <button id="exportBtn" class="btn-next-pill" title="Export Match Transcript (.md)" disabled>
-          Export ↓
+        <button id="exportBtn" class="btn-next-pill" title="Export match transcript (.md)" disabled>
+          Export
         </button>
         <button id="nextTurnBtn" class="btn-next-pill" disabled>
-          Next Turn ➔
+          Next turn
         </button>
       </div>
     </footer>
   </div>
 
-  <!-- Settings Modal (Matching Image 2) -->
+  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal" style="display: none;">
     <div class="settings-modal-card">
       <div class="settings-modal-header">
         <div class="settings-modal-title">
-          <span>⚙</span> ARENA BOT CONFIGURATIONS
+          <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          Arena bot configurations
         </div>
-        <button class="modal-close-btn" id="closeSettingsBtn" title="Close Settings">✕</button>
+        <button class="modal-close-btn" id="closeSettingsBtn" title="Close settings">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
 
       <div class="settings-modal-body">
@@ -368,10 +372,9 @@
             <div class="col-brand-header">
               <div class="cosmic-avatar-container n-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
                 <span>N</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div>
-                <h4>N WATHS <span class="provider-tag">(NVIDIA NIM)</span></h4>
+                <h4>N Waths <span class="provider-tag">(NVIDIA NIM)</span></h4>
               </div>
             </div>
 
@@ -460,10 +463,9 @@
             <div class="col-brand-header">
               <div class="cosmic-avatar-container p-cosmic-avatar" style="width:32px;height:32px;font-size:13px;">
                 <span>P</span>
-                <span class="cosmic-ring"></span>
               </div>
               <div>
-                <h4>P WATHS <span class="provider-tag">(OpenRouter)</span></h4>
+                <h4>P Waths <span class="provider-tag">(OpenRouter)</span></h4>
               </div>
             </div>
 
@@ -550,8 +552,8 @@
       </div>
 
       <div class="settings-modal-footer">
-        <button id="resetSettingsBtn" class="btn-modal-reset">RESET TO DEFAULTS</button>
-        <button id="saveSettingsBtn" class="btn-modal-save">SAVE & APPLY</button>
+        <button id="resetSettingsBtn" class="btn-modal-reset">Reset to defaults</button>
+        <button id="saveSettingsBtn" class="btn-modal-save">Save &amp; apply</button>
       </div>
     </div>
   </div>

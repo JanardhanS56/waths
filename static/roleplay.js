@@ -394,7 +394,7 @@ async function summonMasterAndStart() {
 
     const data = await res.json();
     if (data.error) {
-      appendSystemBanner(`⚠️ Arena Master Error: ${data.error}`, "error");
+      appendSystemBanner(`Arena Master error: ${data.error}`, "error");
       setText(turnStatus, "Arena Master failed to generate briefing.");
       STATE.isSimulating = false;
       STATE.currentTurn = null;
@@ -425,14 +425,14 @@ async function summonMasterAndStart() {
     setText(briefNRole, STATE.briefing?.n_role_context || `${nChar} persona`);
     setText(briefPRole, STATE.briefing?.p_role_context || `${pChar} persona`);
 
-    appendSystemBanner(`⚖️ Arena Master set scene: "${STATE.briefing?.scenario_summary || 'Duel active'}"`);
+    appendSystemBanner(`Arena Master set scene: "${STATE.briefing?.scenario_summary || 'Duel active'}"`);
     updateScoreboard();
 
     // Start with first turn
     executeNextTurn();
 
   } catch (err) {
-    appendSystemBanner(`⚠️ Network error calling Arena Master: ${err.message}`, "error");
+    appendSystemBanner(`Network error calling Arena Master: ${err.message}`, "error");
     setText(turnStatus, "Error reaching server.");
     STATE.isSimulating = false;
     STATE.currentTurn = null;
@@ -468,12 +468,12 @@ function resetSimulation() {
   if (chatFeed) {
     chatFeed.innerHTML = `
       <div class="idle-stage-card">
-        <span class="idle-stage-badge">Roleplay Arena // Ready</span>
-        <h3>In-Character Persona Duel</h3>
-        <p>Choose a preset or customize both actors and scenario, then click <strong>START ▶</strong> to summon the Groq Arena Master.</p>
+        <span class="idle-stage-badge">Roleplay arena</span>
+        <h3>In-character persona duel</h3>
+        <p>Choose a preset or customize both actors and scenario, then click Start to summon the Groq Arena Master.</p>
         <div class="idle-stage-hints">
-          <span>Keys 1–0: Fidelity Score</span>
-          <span>Esc: Close Settings</span>
+          <span>Keys 1–0: score</span>
+          <span>Esc: close settings</span>
         </div>
       </div>
     `;
@@ -560,7 +560,7 @@ async function executeNextTurn() {
     typingRow.remove();
 
     if (data.error) {
-      appendSystemBanner(`⚠️ ${activeChar} Error: ${data.error}`, "error");
+      appendSystemBanner(`${activeChar} error: ${data.error}`, "error");
       setText(turnStatus, `${activeChar} encountered an error.`);
       setText(ribbonStatus, `Error: ${data.error}`);
       if (nextTurnBtn) nextTurnBtn.disabled = false;
@@ -594,7 +594,7 @@ async function executeNextTurn() {
 
   } catch (err) {
     typingRow.remove();
-    appendSystemBanner(`⚠️ Network Error: ${err.message}`, "error");
+    appendSystemBanner(`Network error: ${err.message}`, "error");
     setText(turnStatus, "Network error communicating with server.");
     setText(ribbonStatus, "Failed to reach server.");
     if (nextTurnBtn) nextTurnBtn.disabled = false;
@@ -615,7 +615,7 @@ function renderRoleplayMessage(bot, charName, text, maxChars = 200) {
   bubble.innerHTML = `
     <div class="msg-header">
       <span class="msg-author">
-        ${isN ? '🟢' : '🔵'} ${charName} <span class="actor-tag">(${bot})</span>
+        ${charName} <span class="actor-tag">(${bot})</span>
       </span>
       <span class="char-badge ${isWarning ? 'warning' : ''}">
         ${charCount}/${maxChars} chars
@@ -624,7 +624,7 @@ function renderRoleplayMessage(bot, charName, text, maxChars = 200) {
     <div class="msg-text">${escapeHtml(text)}</div>
     <div class="rating-area">
       <div class="rating-prompt">
-        <span>Rate role authenticity & depth (1 - 10):</span>
+        <span>Fidelity score (1–10)</span>
       </div>
       <div class="score-buttons">
         ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button class="score-btn" data-score="${n}">${n}</button>`).join('')}
@@ -667,7 +667,7 @@ function recordScore(bot, score, bubbleEl) {
   if (ratingArea) {
     ratingArea.innerHTML = `
       <div class="rated-pill">
-        ⭐ Fidelity Score: ${score} / 10
+        Fidelity: ${score} / 10
       </div>
     `;
   }
